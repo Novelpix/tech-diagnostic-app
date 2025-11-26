@@ -2155,14 +2155,14 @@
         </p>
 
         <div style="border-top: 2px solid #e9ecef; padding-top: 40px; margin-top: 40px;">
-          <h3 style="color: #333; text-align: center; margin-bottom: 20px;">📥 Importer des données (Restauration)</h3>
-
-          <div style="text-align: center; margin: 30px 0;">
-            <input type="file" id="importJSONFile" accept=".json" style="display: none;"
-              onchange="handleJSONImport(event)">
-            <button class="btn btn-warning" onclick="document.getElementById('importJSONFile').click()">
-              📥 Importer JSON (Restaurer données)
-            </button>
+          <div class="header-actions">
+            <button id="btnSync" class="btn-primary" onclick="syncAllData()" style="background-color: #28a745;">🔄
+              Synchroniser</button>
+            <button class="btn-secondary" onclick="exportCSVAndPhotos()">📄 Export CSV + Photos</button>
+            <button class="btn-secondary" onclick="exportJSON()">💾 Backup JSON</button>
+            <input type="file" id="importJSON" accept=".json" style="display: none;" onchange="handleJSONImport(event)">
+            <button class="btn-secondary" onclick="document.getElementById('importJSON').click()">📥 Restaurer</button>
+            <button class="btn-danger" onclick="clearAllData()">🗑️ Reset</button>
           </div>
 
           <p style="text-align: center; color: #6c757d; font-size: 14px; margin: 20px 0;">
@@ -4331,6 +4331,161 @@
     `;
 
       container.innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SYNCHRONISATION SUPABASE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    async function uploadPhotoToSupabase(base64Data, fileName, equipmentId) {
+      try {
+        const parts = base64Data.split(';base64,');
+        const contentType = parts[0].replace('data:', '');
+        const byteCharacters = atob(parts[1]);
+        const byteArrays = [];
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          byteArrays.push(new Uint8Array(byteNumbers));
+        }
+        const file = new Blob(byteArrays, { type: contentType });
+
+        const { error } = await supabaseClient
+          .storage
+          .from("pec-photos")
+          .upload(`${equipmentId}/${fileName}`, file, {
+            cacheControl: "3600",
+            upsert: true
+          });
+
+        if (error) {
+          console.error("Supabase upload error:", error);
+          return null;
+        }
+
+        return `${SUPABASE_URL}/storage/v1/object/public/pec-photos/${equipmentId}/${fileName}`;
+      } catch (err) {
+        console.error("Upload failure:", err);
+        return null;
+      }
+    }
+
+    async function saveEquipmentToSupabase(equipment) {
+      try {
+        // Préparer l'objet pour Supabase (exclure les photos base64)
+        const equipmentForDb = { ...equipment };
+        delete equipmentForDb.photos; // On ne stocke pas les photos base64 en base
+        delete equipmentForDb.croquis; // Idem si trop lourd, sinon convertir
+
+        // 1. Sauvegarder l'équipement
+        const { data: eq, error: eqErr } = await supabaseClient
+          .from("equipements")
+          .upsert(equipmentForDb, { onConflict: 'id' }) // Utilise l'ID existant
+          .select()
+          .single();
+
+        if (eqErr) {
+          console.error("Supabase insert error:", eqErr);
+          return false;
+        }
+
+        const eqId = eq.id;
+
+        // 2. Sauvegarder les photos
+        if (equipment.photos && equipment.photos.length > 0) {
+          for (let i = 0; i < equipment.photos.length; i++) {
+            const photo = equipment.photos[i];
+            // Si c'est déjà une URL (déjà sync), on ignore
+            if (photo.data && photo.data.startsWith('http')) continue;
+
+            if (photo.data) {
+              const url = await uploadPhotoToSupabase(
+                photo.data,
+                photo.name || `photo_${Date.now()}_${i}.jpg`,
+                eqId
+              );
+
+              if (url) {
+                // Enregistrer l'URL dans la table photos
+                await supabaseClient.from("photos").insert({
+                  equipement_id: eqId,
+                  url: url
+                });
+
+                // Mettre à jour l'objet local pour ne plus re-uploader
+                // (Optionnel : complexifie la gestion locale, on peut juste laisser comme ça)
+              }
+            }
+          }
+        }
+        return true;
+      } catch (err) {
+        console.error("Save error:", err);
+        return false;
+      }
+    }
+
+    async function syncAllData() {
+      if (!navigator.onLine) {
+        showToast('❌ Pas de connexion internet', 'error');
+        return;
+      }
+
+      if (!supabaseClient) {
+        showToast('❌ Supabase non configuré', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btnSync');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Sync...';
+      }
+      showToast('🔄 Synchronisation en cours...', 'info');
+
+      let successCount = 0;
+      let failCount = 0;
+      let total = 0;
+
+      // Compter le total
+      LOTS_TECHNIQUES.forEach(lot => {
+        if (AppState.equipmentData[lot]) {
+          total += AppState.equipmentData[lot].length;
+        }
+      });
+
+      if (total === 0) {
+        showToast('⚠️ Aucune donnée à synchroniser', 'warning');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '🔄 Synchroniser';
+        }
+        return;
+      }
+
+      // Itérer et envoyer
+      for (const lot of LOTS_TECHNIQUES) {
+        const equipments = AppState.equipmentData[lot] || [];
+        for (const eq of equipments) {
+          const success = await saveEquipmentToSupabase(eq);
+          if (success) successCount++;
+          else failCount++;
+        }
+      }
+
+      if (failCount === 0) {
+        showToast(`✅ Synchronisation terminée (${successCount}/${total})`, 'success');
+      } else {
+        showToast(`⚠️ Synchronisation partielle (${successCount} OK, ${failCount} échecs)`, 'warning');
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '🔄 Synchroniser';
+      }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
