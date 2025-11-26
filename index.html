@@ -3997,7 +3997,21 @@
       }
     }
 
-    window.addEventListener('online', updateOnlineStatus);
+    // Gestion du retour en ligne avec synchronisation automatique
+    function handleOnlineEvent() {
+      console.log('🌐 Connexion rétablie - Démarrage de la synchronisation automatique');
+      updateOnlineStatus();
+
+      // Attendre 2 secondes pour s'assurer que la connexion est stable
+      setTimeout(() => {
+        if (navigator.onLine) {
+          console.log('🔄 Lancement de la synchronisation automatique...');
+          syncAllData();
+        }
+      }, 2000);
+    }
+
+    window.addEventListener('online', handleOnlineEvent);
     window.addEventListener('offline', updateOnlineStatus);
 
     // ═══════════════════════════════════════════════════════════════════════
