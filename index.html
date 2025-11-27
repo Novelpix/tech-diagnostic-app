@@ -3739,15 +3739,18 @@
         }
 
         // 🆕 UTILISER L'ID SUPABASE STOCKÉ directement
-        const supabaseEquipmentId = equipmentToDelete.supabaseId;
+        const supabaseEquipmentId = equipmentToDelete.supabase_id;
 
         if (!supabaseEquipmentId) {
-          console.warn("Équipement sans ID Supabase - probablement jamais synchronisé");
+          console.warn("⚠️ Équipement sans ID Supabase - probablement jamais synchronisé");
+          console.log("📋 Équipement local seulement, pas de suppression Supabase nécessaire");
           // L'équipement n'a jamais été envoyé à Supabase, c'est OK
           return true;
         }
 
         console.log(`🗑️ Suppression Supabase de l'équipement ID: ${supabaseEquipmentId}`);
+        console.log(`📍 ID local: ${equipmentId}`);
+        console.log(`📍 ID Supabase: ${supabaseEquipmentId}`);
 
         // Note: supabaseEquipmentId est déjà défini, pas besoin de le chercher
 
@@ -3793,18 +3796,30 @@
         }
 
         // 🆕 ÉTAPE 3: Supprimer l'équipement PAR SON ID SUPABASE
-        const { error } = await supabaseClient
+        console.log("🔄 Tentative de suppression de l'équipement dans Supabase...");
+
+        const { data: deletedData, error } = await supabaseClient
           .from("equipements")
           .delete()
-          .eq("id", supabaseEquipmentId);
+          .eq("id", supabaseEquipmentId)
+          .select();
 
         if (error) {
-          console.error("Erreur suppression Supabase:", error);
+          console.error("❌ Erreur suppression Supabase:", error);
+          console.error("❌ Détails:", JSON.stringify(error, null, 2));
           showToast('⚠️ Erreur lors de la suppression sur Supabase', 'warning');
           return false;
         }
 
-        console.log("✅ Équipement supprimé de Supabase (ID:", supabaseEquipmentId, ")");
+        if (!deletedData || deletedData.length === 0) {
+          console.warn("⚠️ Aucun équipement supprimé (peut-être déjà supprimé ou ID invalide)");
+          showToast('⚠️ Équipement introuvable dans Supabase', 'warning');
+          return false;
+        }
+
+        console.log("✅ Équipement supprimé de Supabase:", deletedData);
+        console.log(`✅ ID Supabase supprimé: ${supabaseEquipmentId}`);
+        showToast('✅ Équipement supprimé de Supabase', 'success');
         return true;
 
       } catch (err) {
