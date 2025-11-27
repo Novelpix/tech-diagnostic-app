@@ -3476,7 +3476,7 @@
       }
 
       if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-        sendToSupabase(equipment);
+        saveEquipmentToSupabase(equipment);
       }
 
       setTimeout(() => {
@@ -3489,122 +3489,10 @@
     // ENVOI VERS SUPABASE
     // ═══════════════════════════════════════════════════════════════════════
 
-    async function sendToSupabase(equipment) {
-      try {
-        if (!supabaseClient) {
-          console.warn("Supabase non initialisé (supabaseClient nul).");
-          return;
-        }
-
-        const payload = {
-          code: equipment.code || null,
-          lot: equipment.lot || null,
-          niveau: equipment.niveau || null,
-          local: equipment.local || null,
-          date_visite: equipment.date || null,
-          heure_debut: equipment.heureDebut || null,
-          heure_fin: equipment.heureFin || null,
-          technicien: equipment.technicien || null,
-          entreprise: equipment.entreprise || null,
-          ev: typeof equipment.ev === "number" ? equipment.ev : (equipment.ev ? Number(equipment.ev) || null : null),
-          criticite: equipment.crit || null,
-          type_anomalie: equipment.type_anomalie || null,
-          budget: equipment.budget || null,
-          remarques: equipment.observations || equipment.constat || null,
-          latitude: null,
-          longitude: null,
-          data: (function () {
-            const clone = { ...equipment };
-            delete clone.photos;
-            delete clone.croquis;
-            return clone;
-          })()
-        };
-
-        console.log("Payload envoyé à Supabase :", payload);
-
-        // 🆕 DÉTERMINER SI C'EST UNE CRÉATION OU MISE À JOUR
-        let supabaseEquipmentId = equipment.supabaseId || null;
-        let upserted = null;
-        let error = null;
-
-        if (supabaseEquipmentId) {
-          // MISE À JOUR d'un équipement existant
-          console.log("🔄 Mise à jour de l'équipement existant (ID:", supabaseEquipmentId, ")");
-
-          const result = await supabaseClient
-            .from("equipements")
-            .update(payload)
-            .eq("id", supabaseEquipmentId)
-            .select()
-            .single();
-
-          upserted = result.data;
-          error = result.error;
-        } else {
-          // CRÉATION d'un nouvel équipement
-          console.log("➕ Création d'un nouvel équipement");
-
-          const result = await supabaseClient
-            .from("equipements")
-            .insert(payload)
-            .select()
-            .single();
-
-          upserted = result.data;
-          error = result.error;
-        }
-
-        if (error) {
-          console.error("Erreur upsert Supabase :", error);
-          showToast('❌ Erreur lors de l\'envoi vers Supabase', 'error');
-          return;
-        }
-
-        console.log("Équipement upsert dans Supabase :", upserted);
-
-        // 🆕 STOCKER L'ID SUPABASE DANS L'ÉQUIPEMENT LOCAL
-        if (upserted && upserted.id) {
-          equipment.supabaseId = upserted.id;
-
-          // Mettre à jour dans AppState
-          if (AppState.currentLot && equipment.id) {
-            const index = AppState.equipmentData[AppState.currentLot]?.findIndex(e => e.id === equipment.id);
-            if (index !== -1) {
-              AppState.equipmentData[AppState.currentLot][index].supabaseId = upserted.id;
-              saveToLocalStorage();
-            }
-          }
-        }
-
-        if (Array.isArray(equipment.photos) && equipment.photos.length > 0) {
-          for (let i = 0; i < equipment.photos.length; i++) {
-            const photoItem = equipment.photos[i];
-            const base64 = (typeof photoItem === "string") ? photoItem : (photoItem && photoItem.data ? photoItem.data : null);
-            if (!base64) continue;
-
-            const url = await uploadPhotoToSupabase(base64, `photo_${i + 1}.jpg`, upserted.id);
-            if (!url) continue;
-
-            const { error: photoErr } = await supabaseClient
-              .from("photos")
-              .insert({
-                equipement_id: upserted.id,
-                url: url
-              });
-
-            if (photoErr) {
-              console.error("Erreur insertion ligne photo Supabase :", photoErr);
-            }
-          }
-        }
-
-        showToast('✅ Équipement envoyé à Supabase', 'success');
-      } catch (e) {
-        console.error("Erreur sendToSupabase (exception) :", e);
-        showToast('❌ Erreur technique Supabase', 'error');
-      }
-    }
+    // ═══════════════════════════════════════════════════════════════════════
+    // ANCIENNE FONCTION sendToSupabase SUPPRIMÉE
+    // Utiliser saveEquipmentToSupabase() à la place (ligne ~4376)
+    // ═══════════════════════════════════════════════════════════════════════
 
     async function uploadPhotoToSupabase(base64Data, fileName, equipmentId) {
       try {
