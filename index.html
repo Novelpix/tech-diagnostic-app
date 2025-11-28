@@ -2658,22 +2658,25 @@
       }
 
       equipments.forEach((equipment) => {
+        // 🆕 Normaliser l'équipement pour l'affichage
+        const normalized = normalizeEquipmentForDisplay(equipment);
+
         const card = document.createElement('div');
         card.className = 'equipment-card';
 
-        const evLabel = ['🔴 Critique', '🟠 Mauvais', '🟡 Moyen', '🟢 Bon', '🔵 Neuf'][equipment.ev] || '-';
+        const evLabel = ['🔴 Critique', '🟠 Mauvais', '🟡 Moyen', '🟢 Bon', '🔵 Neuf'][normalized.ev] || '-';
 
         card.innerHTML = `
         <div class="equipment-info">
-          <h3>${equipment.type || 'Équipement'}</h3>
+          <h3>${normalized.type || 'Équipement'}</h3>
           <div class="equipment-details">
-            ${equipment.code || ''} | ${evLabel}
-            ${equipment.marque ? ' | ' + equipment.marque : ''}
+            ${normalized.code || ''} | ${evLabel}
+            ${normalized.marque ? ' | ' + normalized.marque : ''}
           </div>
         </div>
         <div style="display: flex; gap: 10px;">
-          <button class="btn btn-secondary btn-small" onclick="editEquipment('${equipment.id}')">✏️ Modifier</button>
-          <button class="btn btn-danger btn-small" onclick="deleteEquipment('${equipment.id}')">🗑️ Supprimer</button>
+          <button class="btn btn-secondary btn-small" onclick="editEquipment('${normalized.local_id}')">✏️ Modifier</button>
+          <button class="btn btn-danger btn-small" onclick="deleteEquipment('${normalized.local_id}')">🗑️ Supprimer</button>
         </div>
       `;
 
