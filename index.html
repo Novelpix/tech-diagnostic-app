@@ -2306,7 +2306,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
     // Version de l'application
-    const APP_VERSION = '1.0.0';
+    const APP_VERSION = '1.0.2';
 
     const LOTS_TECHNIQUES = [
       'Structure / GO',
@@ -3392,8 +3392,19 @@
         return;
       }
 
+      // 🆕 Récupérer l'équipement existant si on est en mode édition
+      let existingEquipment = null;
+      if (AppState.editingEquipmentId) {
+        const index = AppState.equipmentData[AppState.currentLot]?.findIndex((e) => e.id === AppState.editingEquipmentId);
+        if (index !== -1) {
+          existingEquipment = AppState.equipmentData[AppState.currentLot][index];
+        }
+      }
+
       const equipment = {
         id: AppState.editingEquipmentId || Date.now().toString(),
+        // 🆕 IMPORTANT : Conserver le supabase_id lors d'une édition
+        supabase_id: existingEquipment?.supabase_id || null,
         lot: AppState.currentLot,
         date: document.getElementById('formDate').value,
         heureDebut: document.getElementById('formHeureDebut').value,
