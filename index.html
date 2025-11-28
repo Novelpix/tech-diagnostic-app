@@ -3836,7 +3836,7 @@
       }
 
       // Normaliser l'équipement pour l'affichage (compatibilité)
-      const normalizedEquipment = normalizeEquipmentForDisplay(equipment);
+      const eq = normalizeEquipmentForDisplay(equipment);
 
       AppState.editingEquipmentId = localId;
 
@@ -3844,23 +3844,23 @@
       populateTypeSelect();
 
       // Remplir tous les champs standard
-      document.getElementById('formLot').value = equipment.lot || '';
-      document.getElementById('formDate').value = equipment.date || '';
-      document.getElementById('formHeureDebut').value = equipment.heureDebut || '';
-      document.getElementById('formHeureFin').value = equipment.heureFin || '';
-      document.getElementById('formTechnicien').value = equipment.technicien || '';
-      document.getElementById('formEntreprise').value = equipment.entreprise || '';
-      document.getElementById('formContactSite').value = equipment.contactSite || '';
-      document.getElementById('formTelReferent').value = equipment.telReferent || '';
-      document.getElementById('formMeteo').value = equipment.meteo || '';
-      document.getElementById('formTypeVisite').value = equipment.typeVisite || '';
-      document.getElementById('formNiveau').value = equipment.niveau || '';
-      document.getElementById('formLocal').value = equipment.local || '';
+      document.getElementById('formLot').value = eq.lot || '';
+      document.getElementById('formDate').value = eq.date || '';
+      document.getElementById('formHeureDebut').value = eq.heureDebut || '';
+      document.getElementById('formHeureFin').value = eq.heureFin || '';
+      document.getElementById('formTechnicien').value = eq.technicien || '';
+      document.getElementById('formEntreprise').value = eq.entreprise || '';
+      document.getElementById('formContactSite').value = eq.contactSite || '';
+      document.getElementById('formTelReferent').value = eq.telReferent || '';
+      document.getElementById('formMeteo').value = eq.meteo || '';
+      document.getElementById('formTypeVisite').value = eq.typeVisite || '';
+      document.getElementById('formNiveau').value = eq.niveau || '';
+      document.getElementById('formLocal').value = eq.local || '';
 
       // Type d'équipement
       const typeSelect = document.getElementById('formType');
       const typeAutreField = document.getElementById('formTypeAutre');
-      const equipmentType = equipment.type || '';
+      const equipmentType = eq.type || '';
 
       let typeExists = false;
       for (let option of typeSelect.options) {
@@ -3887,93 +3887,93 @@
       // Déclencher l'affichage des sections spécifiques
       updateFieldsBasedOnType(equipmentType, AppState.currentLot);
 
-      document.getElementById('formCode').value = equipment.code || '';
-      document.getElementById('formQRCode').value = equipment.qrCode || '';
-      document.getElementById('formRefDOE').value = equipment.refDOE || '';
-      document.getElementById('formRefPlan').value = equipment.refPlan || '';
+      document.getElementById('formCode').value = eq.code || '';
+      document.getElementById('formQRCode').value = eq.qrCode || '';
+      document.getElementById('formRefDOE').value = eq.refDOE || '';
+      document.getElementById('formRefPlan').value = eq.refPlan || '';
 
       // Champs mécaniques
-      if (document.getElementById('formMarque')) document.getElementById('formMarque').value = equipment.marque || '';
-      if (document.getElementById('formModele')) document.getElementById('formModele').value = equipment.modele || '';
-      if (document.getElementById('formSerie')) document.getElementById('formSerie').value = equipment.serie || '';
-      if (document.getElementById('formPuissance')) document.getElementById('formPuissance').value = equipment.puissance || '';
-      if (document.getElementById('formUnite')) document.getElementById('formUnite').value = equipment.unite || '';
-      if (document.getElementById('formAnnee')) document.getElementById('formAnnee').value = equipment.annee || '';
+      if (document.getElementById('formMarque')) document.getElementById('formMarque').value = eq.marque || '';
+      if (document.getElementById('formModele')) document.getElementById('formModele').value = eq.modele || '';
+      if (document.getElementById('formSerie')) document.getElementById('formSerie').value = eq.serie || '';
+      if (document.getElementById('formPuissance')) document.getElementById('formPuissance').value = eq.puissance || '';
+      if (document.getElementById('formUnite')) document.getElementById('formUnite').value = eq.unite || '';
+      if (document.getElementById('formAnnee')) document.getElementById('formAnnee').value = eq.annee || '';
 
       // 🆕 Champs compteur d'eau
-      if (document.getElementById('formWaterMeterType')) document.getElementById('formWaterMeterType').value = equipment.waterMeterType || '';
-      if (document.getElementById('formWaterMeterSerial')) document.getElementById('formWaterMeterSerial').value = equipment.waterMeterSerial || '';
-      if (document.getElementById('formWaterMeterField')) document.getElementById('formWaterMeterField').value = equipment.waterMeterField || '';
-      if (document.getElementById('formWaterMeterGTB')) document.getElementById('formWaterMeterGTB').value = equipment.waterMeterGTB || '';
-      if (document.getElementById('formWaterMeterDiff')) document.getElementById('formWaterMeterDiff').value = equipment.waterMeterDiff || '';
-      if (document.getElementById('formWaterMeterLastRead')) document.getElementById('formWaterMeterLastRead').value = equipment.waterMeterLastRead || '';
-      if (document.getElementById('formWaterMeterCoherence')) document.getElementById('formWaterMeterCoherence').value = equipment.waterMeterCoherence || '';
-      if (document.getElementById('formWaterMeterObs')) document.getElementById('formWaterMeterObs').value = equipment.waterMeterObs || '';
+      if (document.getElementById('formWaterMeterType')) document.getElementById('formWaterMeterType').value = eq.waterMeterType || '';
+      if (document.getElementById('formWaterMeterSerial')) document.getElementById('formWaterMeterSerial').value = eq.waterMeterSerial || '';
+      if (document.getElementById('formWaterMeterField')) document.getElementById('formWaterMeterField').value = eq.waterMeterField || '';
+      if (document.getElementById('formWaterMeterGTB')) document.getElementById('formWaterMeterGTB').value = eq.waterMeterGTB || '';
+      if (document.getElementById('formWaterMeterDiff')) document.getElementById('formWaterMeterDiff').value = eq.waterMeterDiff || '';
+      if (document.getElementById('formWaterMeterLastRead')) document.getElementById('formWaterMeterLastRead').value = eq.waterMeterLastRead || '';
+      if (document.getElementById('formWaterMeterCoherence')) document.getElementById('formWaterMeterCoherence').value = eq.waterMeterCoherence || '';
+      if (document.getElementById('formWaterMeterObs')) document.getElementById('formWaterMeterObs').value = eq.waterMeterObs || '';
 
       // 🆕 Champs débits air
-      if (document.getElementById('formSanitaryType')) document.getElementById('formSanitaryType').value = equipment.sanitaryType || '';
-      if (document.getElementById('formSanitaryLocation')) document.getElementById('formSanitaryLocation').value = equipment.sanitaryLocation || '';
-      if (document.getElementById('formAirFlowMeasured')) document.getElementById('formAirFlowMeasured').value = equipment.airFlowMeasured || '';
-      if (document.getElementById('formAirFlowRegulation')) document.getElementById('formAirFlowRegulation').value = equipment.airFlowRegulation || '';
-      if (document.getElementById('formAirFlowCompliance')) document.getElementById('formAirFlowCompliance').value = equipment.airFlowCompliance || '';
-      if (document.getElementById('formAirFlowVents')) document.getElementById('formAirFlowVents').value = equipment.airFlowVents || '';
-      if (document.getElementById('formAirFlowVentsState')) document.getElementById('formAirFlowVentsState').value = equipment.airFlowVentsState || '';
-      if (document.getElementById('formAirFlowObs')) document.getElementById('formAirFlowObs').value = equipment.airFlowObs || '';
+      if (document.getElementById('formSanitaryType')) document.getElementById('formSanitaryType').value = eq.sanitaryType || '';
+      if (document.getElementById('formSanitaryLocation')) document.getElementById('formSanitaryLocation').value = eq.sanitaryLocation || '';
+      if (document.getElementById('formAirFlowMeasured')) document.getElementById('formAirFlowMeasured').value = eq.airFlowMeasured || '';
+      if (document.getElementById('formAirFlowRegulation')) document.getElementById('formAirFlowRegulation').value = eq.airFlowRegulation || '';
+      if (document.getElementById('formAirFlowCompliance')) document.getElementById('formAirFlowCompliance').value = eq.airFlowCompliance || '';
+      if (document.getElementById('formAirFlowVents')) document.getElementById('formAirFlowVents').value = eq.airFlowVents || '';
+      if (document.getElementById('formAirFlowVentsState')) document.getElementById('formAirFlowVentsState').value = eq.airFlowVentsState || '';
+      if (document.getElementById('formAirFlowObs')) document.getElementById('formAirFlowObs').value = eq.airFlowObs || '';
 
       // 🆕 Champs GTB
-      if (document.getElementById('formGTBSoftware')) document.getElementById('formGTBSoftware').value = equipment.gtbSoftware || '';
-      if (document.getElementById('formGTBVersion')) document.getElementById('formGTBVersion').value = equipment.gtbVersion || '';
-      if (document.getElementById('formGTBPoints')) document.getElementById('formGTBPoints').value = equipment.gtbPoints || '';
-      if (document.getElementById('formGTBPointsFault')) document.getElementById('formGTBPointsFault').value = equipment.gtbPointsFault || '';
-      if (document.getElementById('formGTBAvailability')) document.getElementById('formGTBAvailability').value = equipment.gtbAvailability || '';
-      if (document.getElementById('formGTBLastUpdate')) document.getElementById('formGTBLastUpdate').value = equipment.gtbLastUpdate || '';
-      if (document.getElementById('formGTBAnomalies')) document.getElementById('formGTBAnomalies').value = equipment.gtbAnomalies || '';
+      if (document.getElementById('formGTBSoftware')) document.getElementById('formGTBSoftware').value = eq.gtbSoftware || '';
+      if (document.getElementById('formGTBVersion')) document.getElementById('formGTBVersion').value = eq.gtbVersion || '';
+      if (document.getElementById('formGTBPoints')) document.getElementById('formGTBPoints').value = eq.gtbPoints || '';
+      if (document.getElementById('formGTBPointsFault')) document.getElementById('formGTBPointsFault').value = eq.gtbPointsFault || '';
+      if (document.getElementById('formGTBAvailability')) document.getElementById('formGTBAvailability').value = eq.gtbAvailability || '';
+      if (document.getElementById('formGTBLastUpdate')) document.getElementById('formGTBLastUpdate').value = eq.gtbLastUpdate || '';
+      if (document.getElementById('formGTBAnomalies')) document.getElementById('formGTBAnomalies').value = eq.gtbAnomalies || '';
 
       // 🆕 Champs qualité eau
-      if (document.getElementById('formWaterQualityCircuit')) document.getElementById('formWaterQualityCircuit').value = equipment.waterQualityCircuit || '';
-      if (document.getElementById('formWaterQualityPoint')) document.getElementById('formWaterQualityPoint').value = equipment.waterQualityPoint || '';
-      if (document.getElementById('formWaterQualityPH')) document.getElementById('formWaterQualityPH').value = equipment.waterQualityPH || '';
-      if (document.getElementById('formWaterQualityConductivity')) document.getElementById('formWaterQualityConductivity').value = equipment.waterQualityConductivity || '';
-      if (document.getElementById('formWaterQualityTemp')) document.getElementById('formWaterQualityTemp').value = equipment.waterQualityTemp || '';
-      if (document.getElementById('formWaterQualityHardness')) document.getElementById('formWaterQualityHardness').value = equipment.waterQualityHardness || '';
-      if (document.getElementById('formWaterQualityTAC')) document.getElementById('formWaterQualityTAC').value = equipment.waterQualityTAC || '';
-      if (document.getElementById('formWaterQualityTurbidity')) document.getElementById('formWaterQualityTurbidity').value = equipment.waterQualityTurbidity || '';
-      if (document.getElementById('formWaterQualityChlorine')) document.getElementById('formWaterQualityChlorine').value = equipment.waterQualityChlorine || '';
-      if (document.getElementById('formWaterQualityIron')) document.getElementById('formWaterQualityIron').value = equipment.waterQualityIron || '';
-      if (document.getElementById('formWaterQualityTreatment')) document.getElementById('formWaterQualityTreatment').value = equipment.waterQualityTreatment || '';
-      if (document.getElementById('formWaterQualityObs')) document.getElementById('formWaterQualityObs').value = equipment.waterQualityObs || '';
+      if (document.getElementById('formWaterQualityCircuit')) document.getElementById('formWaterQualityCircuit').value = eq.waterQualityCircuit || '';
+      if (document.getElementById('formWaterQualityPoint')) document.getElementById('formWaterQualityPoint').value = eq.waterQualityPoint || '';
+      if (document.getElementById('formWaterQualityPH')) document.getElementById('formWaterQualityPH').value = eq.waterQualityPH || '';
+      if (document.getElementById('formWaterQualityConductivity')) document.getElementById('formWaterQualityConductivity').value = eq.waterQualityConductivity || '';
+      if (document.getElementById('formWaterQualityTemp')) document.getElementById('formWaterQualityTemp').value = eq.waterQualityTemp || '';
+      if (document.getElementById('formWaterQualityHardness')) document.getElementById('formWaterQualityHardness').value = eq.waterQualityHardness || '';
+      if (document.getElementById('formWaterQualityTAC')) document.getElementById('formWaterQualityTAC').value = eq.waterQualityTAC || '';
+      if (document.getElementById('formWaterQualityTurbidity')) document.getElementById('formWaterQualityTurbidity').value = eq.waterQualityTurbidity || '';
+      if (document.getElementById('formWaterQualityChlorine')) document.getElementById('formWaterQualityChlorine').value = eq.waterQualityChlorine || '';
+      if (document.getElementById('formWaterQualityIron')) document.getElementById('formWaterQualityIron').value = eq.waterQualityIron || '';
+      if (document.getElementById('formWaterQualityTreatment')) document.getElementById('formWaterQualityTreatment').value = eq.waterQualityTreatment || '';
+      if (document.getElementById('formWaterQualityObs')) document.getElementById('formWaterQualityObs').value = eq.waterQualityObs || '';
 
       // État et critères
-      AppState.currentEV = equipment.ev;
-      AppState.currentCRIT = equipment.crit;
-      AppState.currentTYPE = equipment.type_anomalie;
-      AppState.currentBUDGET = equipment.budget;
+      AppState.currentEV = eq.ev;
+      AppState.currentCRIT = eq.crit;
+      AppState.currentTYPE = eq.type_anomalie;
+      AppState.currentBUDGET = eq.budget;
 
       // Observations
-      document.getElementById('formConstat').value = equipment.constat || '';
-      document.getElementById('formObservations').value = equipment.observations || '';
-      document.getElementById('formActions').value = equipment.actions || '';
+      document.getElementById('formConstat').value = eq.constat || '';
+      document.getElementById('formObservations').value = eq.observations || '';
+      document.getElementById('formActions').value = eq.actions || '';
 
       // Photos
-      AppState.currentPhotos = equipment.photos || [];
+      AppState.currentPhotos = eq.photos || [];
 
       // Croquis
-      AppState.currentCroquis = equipment.croquis || null;
+      AppState.currentCroquis = eq.croquis || null;
       initCanvas();
 
       // Afficher les sélections visuelles
       document.querySelectorAll('.radio-option').forEach((opt) => {
         opt.classList.remove('selected');
-        if (opt.dataset.ev !== undefined && parseInt(opt.dataset.ev) === equipment.ev) {
+        if (opt.dataset.ev !== undefined && parseInt(opt.dataset.ev) === eq.ev) {
           opt.classList.add('selected');
         }
-        if (opt.dataset.crit && opt.dataset.crit === equipment.crit) {
+        if (opt.dataset.crit && opt.dataset.crit === eq.crit) {
           opt.classList.add('selected');
         }
-        if (opt.dataset.type && opt.dataset.type === equipment.type_anomalie) {
+        if (opt.dataset.type && opt.dataset.type === eq.type_anomalie) {
           opt.classList.add('selected');
         }
-        if (opt.dataset.budget && opt.dataset.budget === equipment.budget) {
+        if (opt.dataset.budget && opt.dataset.budget === eq.budget) {
           opt.classList.add('selected');
         }
       });
