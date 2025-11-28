@@ -13,6 +13,11 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/)
 - Module `AuditPDF` pour la gestion des données et la génération PDF
 - Bouton "Exporter PDF" dans le tableau de bord
 
+### 🐛 Corrigé
+- **Fix critique**: Préservation du `supabase_id` lors de l'édition d'équipement
+- Correction du bug causant des INSERT au lieu d'UPDATE lors de modifications
+- L'édition d'équipement synchronise maintenant correctement (UPDATE au lieu de créer un doublon)
+
 ## [1.0.0] - 2025-01-28
 
 ### ✨ Ajouté
