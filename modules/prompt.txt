@@ -1,0 +1,141 @@
+🧨 PROMPT ANTIGRAVITY — prêt à coller
+
+Title:
+Implement “Audit PDF Export” feature in PEC-BAT-DEV
+
+Instructions:
+I want you to work inside my project PEC-BAT-DEV (branch dev).
+Your task is to implement the complete Audit Export System, including:
+
+✅ 1. Data extraction from Supabase
+
+Create a new module or functions that fetch:
+
+all equipements
+
+all photos
+
+grouped by lot / niveaux
+
+anomalies (crit, ev, budget…)
+
+timestamps
+
+recommendations
+
+Use the existing Supabase client and follow the project conventions.
+
+Create a function:
+
+async function fetchAuditData() {...}
+
+
+The function must return a structured JSON object ready for report generation.
+
+✅ 2. Build “audit object”
+
+Add a function:
+
+function buildAuditReport(data) {...}
+
+
+It must generate a normalized object:
+
+{
+  resumeGlobal: {...},
+  lots: [...],
+  equipements: [...],
+  anomalies: [...],
+  photosParEquipement: {...},
+  recommandations: [...],
+  horodatage: "...",
+}
+
+
+Use the existing data model and naming conventions.
+
+✅ 3. PDF generation
+
+Implement a complete report PDF generator using:
+
+jsPDF
+
+optional html2canvas
+
+OR pdf-lib (you choose what fits best in the current project)
+
+The export must include:
+
+cover page (Delta Optima Control branding placeholder)
+
+summary page (KPIs, counters, anomalies)
+
+one page per lot
+
+one page per équipement
+
+anomalies grouped
+
+photos embedded (compressed)
+
+timestamp
+
+Add function:
+
+async function generateAuditPDF(report) {...}
+
+
+And trigger a PDF download.
+
+✅ 4. UI integration
+
+Add a button “Exporter le rapport PDF” accessible from the dashboard or header.
+
+When clicked:
+
+const data = await fetchAuditData();
+const report = buildAuditReport(data);
+await generateAuditPDF(report);
+
+
+Follow the UI style already used in PEC-BAT.
+
+⚠️ Requirements & Constraints
+
+Do not break the sync logic
+
+Do not modify existing Supabase flows
+
+Respect AppState structure
+
+Keep code modular → NOT inside index.html all mixed
+
+Add console logs for debugging
+
+Add version bump to APP_VERSION (1.0.2)
+
+Update CHANGELOG.md
+
+Push changes to a new branch named:
+
+claude/audit-export-<random>
+
+🎯 Expected output from you
+
+New JS module(s)
+
+All new functions implemented
+
+UI fully functional
+
+PDF fully generated
+
+No regression
+
+Clean commit
+
+Clear PR
+
+🐆 IOVAT MODE — OPTIONAL NOTE
+
+The goal is to create a professional audit tool for Delta Optima Control, producing a ready-to-send PDF for Facility Managers and Fancy Facilities.

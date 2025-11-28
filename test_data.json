@@ -1,0 +1,283 @@
+{
+    "projet": "Test Import JSON - 1 Équipement par Lot",
+    "dateExport": "2025-11-27T10:00:00.000Z",
+    "version": "1.0",
+    "nbLots": 17,
+    "nbEquipements": 17,
+    "donnees": {
+        "Structure / GO": [
+            {
+                "id": "ST-001",
+                "type": "Dalle",
+                "code": "ST-DAL-001",
+                "local": "Parking R-1",
+                "niveau": "R-1",
+                "ev": 3,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Micro-fissures observées sur la dalle",
+                "recommandations": "Surveillance annuelle",
+                "photos": [],
+                "timestamp": "2025-11-27T09:00:00.000Z"
+            }
+        ],
+        "Enveloppe": [
+            {
+                "id": "ENV-001",
+                "type": "Façade",
+                "code": "ENV-FAC-001",
+                "local": "Façade Nord",
+                "niveau": "RDC",
+                "ev": 2,
+                "crit": "A",
+                "budget": "B",
+                "constat": "Joints de dilatation dégradés par endroits",
+                "recommandations": "Prévoir reprise des joints",
+                "photos": [],
+                "timestamp": "2025-11-27T09:05:00.000Z"
+            }
+        ],
+        "Toitures": [
+            {
+                "id": "TOI-001",
+                "type": "Étanchéité",
+                "code": "TOI-ETA-001",
+                "local": "Toiture Terrasse",
+                "niveau": "R+5",
+                "ev": 1,
+                "crit": "I",
+                "budget": "C",
+                "constat": "Stagnation d'eau importante et décollement relevés",
+                "recommandations": "Réfection partielle à prévoir rapidement",
+                "photos": [],
+                "timestamp": "2025-11-27T09:10:00.000Z"
+            }
+        ],
+        "CVC Production": [
+            {
+                "id": "CVC-PRO-001",
+                "type": "Chaudière",
+                "code": "CVC-CH-01",
+                "marque": "De Dietrich",
+                "modele": "C 230",
+                "annee": "2015",
+                "local": "Chaufferie",
+                "niveau": "S-1",
+                "ev": 3,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Fonctionnement correct, légère fuite sur soupape",
+                "recommandations": "Remplacer soupape lors de la maintenance",
+                "photos": [],
+                "timestamp": "2025-11-27T09:15:00.000Z"
+            }
+        ],
+        "CVC Distribution": [
+            {
+                "id": "CVC-DIS-001",
+                "type": "Pompe",
+                "code": "CVC-P-01",
+                "marque": "Grundfos",
+                "local": "Sous-station",
+                "niveau": "RDC",
+                "ev": 2,
+                "crit": "A",
+                "budget": "B",
+                "constat": "Bruit de roulement audible",
+                "recommandations": "Prévoir remplacement des roulements",
+                "photos": [],
+                "timestamp": "2025-11-27T09:20:00.000Z"
+            }
+        ],
+        "CVC Émission": [
+            {
+                "id": "CVC-EMI-001",
+                "type": "Radiateur",
+                "code": "CVC-RAD-102",
+                "local": "Bureau 102",
+                "niveau": "R+1",
+                "ev": 4,
+                "crit": "S",
+                "budget": "A",
+                "constat": "RAS, tête thermostatique fonctionnelle",
+                "photos": [],
+                "timestamp": "2025-11-27T09:25:00.000Z"
+            }
+        ],
+        "Ventilation": [
+            {
+                "id": "VEN-001",
+                "type": "CTA",
+                "code": "VEN-CTA-01",
+                "marque": "Atlantic",
+                "local": "Local CTA",
+                "niveau": "Toiture",
+                "ev": 2,
+                "crit": "I",
+                "budget": "B",
+                "constat": "Courroie détendue et filtres encrassés",
+                "recommandations": "Remplacer filtres et retendre courroie",
+                "photos": [],
+                "timestamp": "2025-11-27T09:30:00.000Z"
+            }
+        ],
+        "Électricité CFO": [
+            {
+                "id": "ELEC-CFO-001",
+                "type": "TGBT",
+                "code": "EL-TGBT-01",
+                "marque": "Schneider",
+                "local": "Local TGBT",
+                "niveau": "RDC",
+                "ev": 3,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Bon état général, plastrons en place",
+                "photos": [],
+                "timestamp": "2025-11-27T09:35:00.000Z"
+            }
+        ],
+        "Électricité CFA": [
+            {
+                "id": "ELEC-CFA-001",
+                "type": "VDI",
+                "code": "EL-VDI-01",
+                "local": "Local Serveur",
+                "niveau": "R+2",
+                "ev": 2,
+                "crit": "A",
+                "budget": "A",
+                "constat": "Câblage en façade désordonné (plat de nouilles)",
+                "recommandations": "Ranger les cordons de brassage",
+                "photos": [],
+                "timestamp": "2025-11-27T09:40:00.000Z"
+            }
+        ],
+        "GTB": [
+            {
+                "id": "GTB-001",
+                "type": "Automate",
+                "code": "GTB-AUT-01",
+                "marque": "Trend",
+                "local": "Local GTB",
+                "niveau": "RDC",
+                "ev": 1,
+                "crit": "U",
+                "budget": "C",
+                "constat": "Automate en défaut général, communication coupée",
+                "recommandations": "Intervention spécialiste urgente",
+                "photos": [],
+                "timestamp": "2025-11-27T09:45:00.000Z"
+            }
+        ],
+        "SSI": [
+            {
+                "id": "SSI-001",
+                "type": "Détecteur",
+                "code": "SSI-DA-12",
+                "local": "Couloir circulation",
+                "niveau": "R+3",
+                "ev": 4,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Voyant clignotant vert, état normal",
+                "photos": [],
+                "timestamp": "2025-11-27T09:50:00.000Z"
+            }
+        ],
+        "Plomberie": [
+            {
+                "id": "PLB-001",
+                "type": "Réseau EF",
+                "code": "PL-VAN-05",
+                "local": "Gaine technique",
+                "niveau": "R+1",
+                "ev": 2,
+                "crit": "A",
+                "budget": "B",
+                "constat": "Traces de corrosion sur vanne d'arrêt",
+                "recommandations": "Prévoir remplacement à moyen terme",
+                "photos": [],
+                "timestamp": "2025-11-27T09:55:00.000Z"
+            }
+        ],
+        "Ascenseurs": [
+            {
+                "id": "ASC-001",
+                "type": "Ascenseur",
+                "code": "ASC-01",
+                "marque": "Otis",
+                "local": "Hall Principal",
+                "niveau": "RDC",
+                "ev": 3,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Fonctionnement fluide, éclairage cabine OK",
+                "photos": [],
+                "timestamp": "2025-11-27T10:00:00.000Z"
+            }
+        ],
+        "Locaux techniques": [
+            {
+                "id": "LOC-001",
+                "type": "Local CVC",
+                "code": "LOC-01",
+                "local": "Sous-sol",
+                "niveau": "S-1",
+                "ev": 2,
+                "crit": "A",
+                "budget": "A",
+                "constat": "Encombrement par matériel usagé, éclairage faible",
+                "recommandations": "Débarrasser et relamper",
+                "photos": [],
+                "timestamp": "2025-11-27T10:05:00.000Z"
+            }
+        ],
+        "EnR": [
+            {
+                "id": "ENR-001",
+                "type": "Panneaux PV",
+                "code": "ENR-PV-ZN1",
+                "local": "Toiture",
+                "niveau": "Toiture",
+                "ev": 3,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Panneaux propres, onduleur en marche",
+                "photos": [],
+                "timestamp": "2025-11-27T10:10:00.000Z"
+            }
+        ],
+        "IoT": [
+            {
+                "id": "IOT-001",
+                "type": "Capteur T°C",
+                "code": "IOT-TEMP-22",
+                "marque": "Adeunis",
+                "local": "Salle de réunion",
+                "niveau": "R+1",
+                "ev": 3,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Remontée de données OK",
+                "photos": [],
+                "timestamp": "2025-11-27T10:15:00.000Z"
+            }
+        ],
+        "HSE": [
+            {
+                "id": "HSE-001",
+                "type": "Extincteur",
+                "code": "HSE-EXT-05",
+                "local": "Palier escalier A",
+                "niveau": "R+2",
+                "ev": 4,
+                "crit": "S",
+                "budget": "A",
+                "constat": "Date de vérification valide, plomb intact",
+                "photos": [],
+                "timestamp": "2025-11-27T10:20:00.000Z"
+            }
+        ]
+    }
+}

@@ -6,6 +6,13 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/)
 
 ---
 
+## [1.0.2] - 2025-11-28
+
+### ✨ Ajouté
+- Fonctionnalité d'export PDF complet de l'audit
+- Module `AuditPDF` pour la gestion des données et la génération PDF
+- Bouton "Exporter PDF" dans le tableau de bord
+
 ## [1.0.0] - 2025-01-28
 
 ### ✨ Ajouté

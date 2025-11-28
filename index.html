@@ -813,9 +813,10 @@
     <div id="dashboard" class="screen active">
       <div class="header" style="position: relative">
         <h1>🏗️ PEC Tech - Conformité 100%</h1>
-        <div style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 10px;">
+        <div
+          style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 10px;">
           <span id="onlineStatus">🟢</span>
-          <span id="appVersion" style="font-size: 12px; color: #666; font-weight: 500;">v1.0.0</span>
+          <span id="appVersion" style="font-size: 12px; color: #666; font-weight: 500;">v1.0.2</span>
         </div>
       </div>
 
@@ -849,6 +850,8 @@
           <button class="btn btn-primary" id="btnSyncDashboard" onclick="syncAllData()"
             style="margin: 5px; background-color: #28a745;">🔄 Synchroniser</button>
           <button class="btn btn-secondary" id="btnExports" style="margin: 5px;">📊 Import-Export</button>
+          <button class="btn btn-primary" onclick="exportAuditPDF()" style="margin: 5px; background-color: #dc3545;">📄
+            Exporter PDF</button>
           <button class="btn btn-secondary" id="btnJournalVisite" style="margin: 5px;">📝 Journal de Visite</button>
           <button class="btn btn-secondary" id="btnSyntheseKpis" style="margin: 5px;">📊 Synthèse & KPIs</button>
         </div>
@@ -2406,7 +2409,6 @@
     // ═══════════════════════════════════════════════════════════════════════
     // STATE MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
-
     // === SUPABASE CONFIG (ajout auto) ===
     const SUPABASE_URL = "https://zxioajnyvrrfgomamtpl.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4aW9ham55dnJyZmdvbWFtdHBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNDE2MzQsImV4cCI6MjA3OTgxNzYzNH0.Yd-9nmEP5u32OIJyQzq3do5pKOPKUJPU1HfXhgxt_6Q";
@@ -2414,6 +2416,7 @@
     if (typeof supabase !== 'undefined') {
       try {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseClient = supabaseClient; // Expose globally for modules
       } catch (e) {
         console.error("Erreur initialisation Supabase :", e);
       }
@@ -4472,12 +4475,12 @@
 
             // Ignorer les photos déjà uploadées (URL au lieu de base64)
             if (photo.data && photo.data.startsWith('http')) {
-              console.log(`⏭️ Photo ${i+1} déjà synchronisée`);
+              console.log(`⏭️ Photo ${i + 1} déjà synchronisée`);
               continue;
             }
 
             if (photo.data) {
-              console.log(`📤 Upload photo ${i+1}/${equipment.photos.length}...`);
+              console.log(`📤 Upload photo ${i + 1}/${equipment.photos.length}...`);
               const url = await uploadPhotoToSupabase(
                 photo.data,
                 photo.name || `photo_${Date.now()}_${i}.jpg`,
@@ -4494,12 +4497,12 @@
                   });
 
                 if (photoErr) {
-                  console.error(`❌ Erreur insertion photo ${i+1}:`, photoErr);
+                  console.error(`❌ Erreur insertion photo ${i + 1}:`, photoErr);
                 } else {
-                  console.log(`✅ Photo ${i+1} sauvegardée`);
+                  console.log(`✅ Photo ${i + 1} sauvegardée`);
                 }
               } else {
-                console.error(`❌ Échec upload photo ${i+1}`);
+                console.error(`❌ Échec upload photo ${i + 1}`);
               }
             }
           }
@@ -4978,8 +4981,449 @@
             console.log('❌ Échec enregistrement Service Worker:', error);
           });
       });
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
+    function getTodayDateString() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // IMPORT JSON (RESTAURATION DONNÉES)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function handleJSONImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json') {
+        showToast('❌ Erreur : fichier JSON requis (.json)', 'error');
+        event.target.value = '';
+        return;
+      }
+
+      const currentDataExists = Object.keys(AppState.equipmentData).length > 0;
+      if (currentDataExists) {
+        const confirm = window.confirm(
+          '⚠️ ATTENTION !\n\n' +
+          'Cette action va ÉCRASER toutes les données actuelles.\n\n' +
+          'Voulez-vous continuer ?'
+        );
+        if (!confirm) {
+          event.target.value = '';
+          return;
+        }
+      }
+
+      showToast('📥 Import en cours...', 'info');
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        try {
+          const jsonData = JSON.parse(e.target.result);
+
+          if (!jsonData.donnees) {
+            throw new Error('Format JSON invalide : "donnees" manquant');
+          }
+
+          const importedLots = Object.keys(jsonData.donnees);
+          const invalidLots = importedLots.filter(lot => !LOTS_TECHNIQUES.includes(lot));
+
+          if (invalidLots.length > 0) {
+            console.warn('⚠️ Lots non reconnus ignorés:', invalidLots);
+          }
+
+          AppState.equipmentData = jsonData.donnees;
+
+          saveToLocalStorage();
+
+          renderDashboard();
+
+          let totalEquipments = 0;
+          let totalPhotos = 0;
+          Object.values(AppState.equipmentData).forEach(equipments => {
+            totalEquipments += equipments.length;
+            equipments.forEach(eq => {
+              if (eq.photos) totalPhotos += eq.photos.length;
+            });
+          });
+
+          showToast(
+            `✅ Import réussi ! ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
+            'success'
+          );
+
+          setTimeout(() => {
+            alert(
+              '✅ IMPORT RÉUSSI !\n\n' +
+              `📦 Projet : ${jsonData.projet || 'N/A'}\n` +
+              `📅 Date export : ${jsonData.dateExport ? new Date(jsonData.dateExport).toLocaleString('fr-FR') : 'N/A'}\n` +
+              `🔢 Version : ${jsonData.version || 'N/A'}\n\n` +
+              `📊 DONNÉES RESTAURÉES :\n` +
+              `   • ${totalEquipments} équipement(s)\n` +
+              `   • ${totalPhotos} photo(s)\n` +
+              `   • ${Object.keys(AppState.equipmentData).length} lot(s)\n\n` +
+              `💾 Les données ont été sauvegardées automatiquement.`
+            );
+          }, 1000);
+
+        } catch (error) {
+          console.error('❌ Erreur import JSON:', error);
+          showToast('❌ Erreur : fichier JSON invalide ou corrompu', 'error');
+          alert(
+            '❌ ERREUR D\'IMPORT\n\n' +
+            'Le fichier JSON semble invalide ou corrompu.\n\n' +
+            'Détails techniques :\n' + error.message
+          );
+        } finally {
+          event.target.value = '';
+        }
+      };
+
+      reader.onerror = function () {
+        showToast('❌ Erreur de lecture du fichier', 'error');
+        event.target.value = '';
+      };
+
+      reader.readAsText(file);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // FORMAT DE RESTITUTION (NOUVEAU)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function loadFormatRestitutionPreferences() {
+      const formatSelect = document.getElementById('formatRestitution');
+      const cloudUrlInput = document.getElementById('cloudUrl');
+      const gmaoLogicielInput = document.getElementById('gmaoLogiciel');
+      const cloudGroup = document.getElementById('cloudUrlGroup');
+      const gmaoGroup = document.getElementById('gmaoLogicielGroup');
+
+      if (formatSelect) {
+        formatSelect.value = AppState.formatRestitution || 'csv';
+
+        if (formatSelect.value === 'cloud') {
+          cloudGroup.style.display = 'block';
+          if (cloudUrlInput) cloudUrlInput.value = AppState.cloudUrl || '';
+        } else if (formatSelect.value === 'gmao') {
+          gmaoGroup.style.display = 'block';
+          if (gmaoLogicielInput) gmaoLogicielInput.value = AppState.gmaoLogiciel || '';
+        }
+      }
+    }
+
+    function saveFormatRestitution() {
+      const formatSelect = document.getElementById('formatRestitution');
+      const cloudUrlInput = document.getElementById('cloudUrl');
+      const gmaoLogicielInput = document.getElementById('gmaoLogiciel');
+
+      if (!formatSelect) return;
+
+      AppState.formatRestitution = formatSelect.value;
+      AppState.cloudUrl = cloudUrlInput?.value || '';
+      AppState.gmaoLogiciel = gmaoLogicielInput?.value || '';
+
+      localStorage.setItem('pecTechFormatRestitution', AppState.formatRestitution);
+      localStorage.setItem('pecTechCloudUrl', AppState.cloudUrl);
+      localStorage.setItem('pecTechGmaoLogiciel', AppState.gmaoLogiciel);
+
+      const formatLabels = {
+        'csv': '📄 Excel avec photos (CSV)',
+        'json': '💾 JSON complet',
+        'pdf': '📑 PDF avec hyperliens',
+        'gmao': '🔧 Import GMAO',
+        'bim': '🏗️ Format BIM/IFC',
+        'cloud': '☁️ Plateforme collaborative'
+      };
+
+      let message = `✅ Format de restitution enregistré : ${formatLabels[AppState.formatRestitution]}`;
+
+      if (AppState.formatRestitution === 'cloud' && AppState.cloudUrl) {
+        message += `\nURL : ${AppState.cloudUrl}`;
+      } else if (AppState.formatRestitution === 'gmao' && AppState.gmaoLogiciel) {
+        message += `\nLogiciel : ${AppState.gmaoLogiciel}`;
+      }
+
+      showToast('✅ Préférence enregistrée avec succès', 'success');
+
+      console.log('💾 Format restitution sauvegardé:', {
+        format: AppState.formatRestitution,
+        cloudUrl: AppState.cloudUrl,
+        gmaoLogiciel: AppState.gmaoLogiciel
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SERVICE WORKER (PWA)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker enregistré:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('❌ Échec enregistrement Service Worker:', error);
+          });
+      });
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function getTodayDateString() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // IMPORT JSON (RESTAURATION DONNÉES)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function handleJSONImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json') {
+        showToast('❌ Erreur : fichier JSON requis (.json)', 'error');
+        event.target.value = '';
+        return;
+      }
+
+      const currentDataExists = Object.keys(AppState.equipmentData).length > 0;
+      if (currentDataExists) {
+        const confirm = window.confirm(
+          '⚠️ ATTENTION !\n\n' +
+          'Cette action va ÉCRASER toutes les données actuelles.\n\n' +
+          'Voulez-vous continuer ?'
+        );
+        if (!confirm) {
+          event.target.value = '';
+          return;
+        }
+      }
+
+      showToast('📥 Import en cours...', 'info');
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        try {
+          const jsonData = JSON.parse(e.target.result);
+
+          if (!jsonData.donnees) {
+            throw new Error('Format JSON invalide : "donnees" manquant');
+          }
+
+          const importedLots = Object.keys(jsonData.donnees);
+          const invalidLots = importedLots.filter(lot => !LOTS_TECHNIQUES.includes(lot));
+
+          if (invalidLots.length > 0) {
+            console.warn('⚠️ Lots non reconnus ignorés:', invalidLots);
+          }
+
+          AppState.equipmentData = jsonData.donnees;
+
+          saveToLocalStorage();
+
+          renderDashboard();
+
+          let totalEquipments = 0;
+          let totalPhotos = 0;
+          Object.values(AppState.equipmentData).forEach(equipments => {
+            totalEquipments += equipments.length;
+            equipments.forEach(eq => {
+              if (eq.photos) totalPhotos += eq.photos.length;
+            });
+          });
+
+          showToast(
+            `✅ Import réussi ! ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
+            'success'
+          );
+
+          setTimeout(() => {
+            alert(
+              '✅ IMPORT RÉUSSI !\n\n' +
+              `📦 Projet : ${jsonData.projet || 'N/A'}\n` +
+              `📅 Date export : ${jsonData.dateExport ? new Date(jsonData.dateExport).toLocaleString('fr-FR') : 'N/A'}\n` +
+              `🔢 Version : ${jsonData.version || 'N/A'}\n\n` +
+              `📊 DONNÉES RESTAURÉES :\n` +
+              `   • ${totalEquipments} équipement(s)\n` +
+              `   • ${totalPhotos} photo(s)\n` +
+              `   • ${Object.keys(AppState.equipmentData).length} lot(s)\n\n` +
+              `💾 Les données ont été sauvegardées automatiquement.`
+            );
+          }, 1000);
+
+        } catch (error) {
+          console.error('❌ Erreur import JSON:', error);
+          showToast('❌ Erreur : fichier JSON invalide ou corrompu', 'error');
+          alert(
+            '❌ ERREUR D\'IMPORT\n\n' +
+            'Le fichier JSON semble invalide ou corrompu.\n\n' +
+            'Détails techniques :\n' + error.message
+          );
+        } finally {
+          event.target.value = '';
+        }
+      };
+
+      reader.onerror = function () {
+        showToast('❌ Erreur de lecture du fichier', 'error');
+        event.target.value = '';
+      };
+
+      reader.readAsText(file);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // FORMAT DE RESTITUTION (NOUVEAU)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function loadFormatRestitutionPreferences() {
+      const formatSelect = document.getElementById('formatRestitution');
+      const cloudUrlInput = document.getElementById('cloudUrl');
+      const gmaoLogicielInput = document.getElementById('gmaoLogiciel');
+      const cloudGroup = document.getElementById('cloudUrlGroup');
+      const gmaoGroup = document.getElementById('gmaoLogicielGroup');
+
+      if (formatSelect) {
+        formatSelect.value = AppState.formatRestitution || 'csv';
+
+        if (formatSelect.value === 'cloud') {
+          cloudGroup.style.display = 'block';
+          if (cloudUrlInput) cloudUrlInput.value = AppState.cloudUrl || '';
+        } else if (formatSelect.value === 'gmao') {
+          gmaoGroup.style.display = 'block';
+          if (gmaoLogicielInput) gmaoLogicielInput.value = AppState.gmaoLogiciel || '';
+        }
+      }
+    }
+
+    function saveFormatRestitution() {
+      const formatSelect = document.getElementById('formatRestitution');
+      const cloudUrlInput = document.getElementById('cloudUrl');
+      const gmaoLogicielInput = document.getElementById('gmaoLogiciel');
+
+      if (!formatSelect) return;
+
+      AppState.formatRestitution = formatSelect.value;
+      AppState.cloudUrl = cloudUrlInput?.value || '';
+      AppState.gmaoLogiciel = gmaoLogicielInput?.value || '';
+
+      localStorage.setItem('pecTechFormatRestitution', AppState.formatRestitution);
+      localStorage.setItem('pecTechCloudUrl', AppState.cloudUrl);
+      localStorage.setItem('pecTechGmaoLogiciel', AppState.gmaoLogiciel);
+
+      const formatLabels = {
+        'csv': '📄 Excel avec photos (CSV)',
+        'json': '💾 JSON complet',
+        'pdf': '📑 PDF avec hyperliens',
+        'gmao': '🔧 Import GMAO',
+        'bim': '🏗️ Format BIM/IFC',
+        'cloud': '☁️ Plateforme collaborative'
+      };
+
+      let message = `✅ Format de restitution enregistré : ${formatLabels[AppState.formatRestitution]}`;
+
+      if (AppState.formatRestitution === 'cloud' && AppState.cloudUrl) {
+        message += `\nURL : ${AppState.cloudUrl}`;
+      } else if (AppState.formatRestitution === 'gmao' && AppState.gmaoLogiciel) {
+        message += `\nLogiciel : ${AppState.gmaoLogiciel}`;
+      }
+
+      showToast('✅ Préférence enregistrée avec succès', 'success');
+
+      console.log('💾 Format restitution sauvegardé:', {
+        format: AppState.formatRestitution,
+        cloudUrl: AppState.cloudUrl,
+        gmaoLogiciel: AppState.gmaoLogiciel
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SERVICE WORKER (PWA)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker enregistré:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('❌ Échec enregistrement Service Worker:', error);
+          });
+      });
+    }
+
+  </script>
+
+  <!-- Audit PDF Export Scripts (Global for file:// compatibility) -->
+  <script src="./modules/AuditPDF/auditData.js"></script>
+  <script src="./modules/AuditPDF/auditGenerator.js"></script>
+
+  <script>
+    console.log("🚀 Scripts AuditPDF chargés");
+    if (window.jspdf) {
+      console.log("✅ jsPDF détecté:", window.jspdf);
+    } else {
+      console.error("❌ jsPDF NON détecté !");
+    }
+
+    window.exportAuditPDF = async function () {
+      console.log("🖱️ Click détecté sur Exporter PDF");
+      try {
+        // Vérifier si showToast est disponible, sinon fallback sur alert
+        const toast = typeof showToast === 'function' ? showToast : (msg) => alert(msg);
+
+        if (!window.jspdf) {
+          toast('❌ Erreur: Librairie PDF non chargée', 'error');
+          return;
+        }
+
+        if (!window.AuditPDF) {
+          toast('❌ Erreur: Module AuditPDF non chargé', 'error');
+          return;
+        }
+
+        toast('📄 Génération du rapport PDF...', 'info');
+        console.log("🚀 Démarrage export PDF...");
+
+        const data = await window.AuditPDF.fetchAuditData();
+        console.log("✅ Données reçues:", data);
+
+        const report = window.AuditPDF.buildAuditReport(data);
+        console.log("✅ Rapport construit:", report);
+
+        await window.AuditPDF.generateAuditPDF(report);
+
+        toast('✅ Rapport PDF généré avec succès', 'success');
+        console.log("✅ Export PDF terminé");
+      } catch (e) {
+        console.error("❌ Erreur export PDF:", e);
+        const toast = typeof showToast === 'function' ? showToast : (msg) => alert(msg);
+        toast('❌ Erreur lors de la génération du PDF: ' + e.message, 'error');
+      }
+    };
+
+    console.log("✅ Fonction window.exportAuditPDF attachée");
   </script>
 </body>
 
