@@ -5159,6 +5159,107 @@
      * Logique terrain fiable : INSERT si nouveau, UPDATE si existant
      */
     /**
+     * 🆕 Synchronise une localisation vers Supabase
+     * @param {Object} localisation - Localisation avec structure standardisée
+     * @returns {Promise<boolean>} true si succès, false sinon
+     */
+    async function syncLocalisationToSupabase(localisation) {
+      try {
+        console.log("🔄 Début de synchronisation localisation:", localisation.local_id);
+
+        if (!supabaseClient) {
+          console.error("❌ Supabase client non disponible");
+          return false;
+        }
+
+        // Préparation du payload (champs métier uniquement)
+        const locForDb = { ...localisation.data };
+
+        // Exclure les champs de gestion locale
+        delete locForDb.status;
+        delete locForDb.synced;
+        delete locForDb.local_id;
+        delete locForDb.supabase_id;
+        delete locForDb.last_update;
+        delete locForDb.created_at;
+
+        console.log("📤 Envoi localisation vers Supabase...", localisation.supabase_id ?
+          `(UPDATE UUID: ${localisation.supabase_id})` :
+          "(INSERT nouveau)");
+
+        let result;
+
+        if (localisation.supabase_id) {
+          // UPDATE
+          console.log(`🔄 UPDATE de la localisation (UUID: ${localisation.supabase_id})`);
+
+          result = await supabaseClient
+            .from("localisations")
+            .update(locForDb)
+            .eq('id', localisation.supabase_id)
+            .select();
+
+          // Si l'UUID n'existe plus, basculer en INSERT
+          if (!result.error && (!result.data || result.data.length === 0)) {
+            console.warn(`⚠️ UUID ${localisation.supabase_id} n'existe plus dans Supabase`);
+            console.log("➕ Basculement automatique en INSERT");
+
+            result = await supabaseClient
+              .from("localisations")
+              .insert(locForDb)
+              .select();
+          }
+        } else {
+          // INSERT
+          console.log("➕ INSERT d'une nouvelle localisation");
+
+          result = await supabaseClient
+            .from("localisations")
+            .insert(locForDb)
+            .select();
+        }
+
+        // Gestion des erreurs
+        if (result.error) {
+          console.error("❌ Erreur Supabase:", result.error);
+          localisation.status = 'error';
+          localisation.synced = false;
+          saveToLocalStorage();
+          return false;
+        }
+
+        if (!result.data || result.data.length === 0) {
+          console.error("❌ Aucune donnée retournée par Supabase");
+          localisation.status = 'error';
+          localisation.synced = false;
+          saveToLocalStorage();
+          return false;
+        }
+
+        const supabaseId = result.data[0].id;
+        console.log("✅ Localisation sauvegardée dans Supabase, UUID:", supabaseId);
+
+        // Mise à jour des métadonnées locales
+        localisation.supabase_id = supabaseId;
+        localisation.status = 'synced';
+        localisation.synced = true;
+        localisation.last_update = new Date().toISOString();
+
+        saveToLocalStorage();
+
+        console.log("✅ Synchronisation localisation terminée");
+        return true;
+
+      } catch (error) {
+        console.error("❌ Erreur lors de la synchronisation localisation:", error);
+        localisation.status = 'error';
+        localisation.synced = false;
+        saveToLocalStorage();
+        return false;
+      }
+    }
+
+    /**
      * 🆕 REFONTE COMPLÈTE - Synchronise un équipement vers Supabase
      * Utilise la nouvelle structure avec local_id, supabase_id, data, photos[]
      * Gère intelligemment INSERT vs UPDATE selon la présence de supabase_id
@@ -5431,18 +5532,22 @@
       }
       showToast('🔄 Synchronisation en cours...', 'info');
 
-      let successCount = 0;
-      let failCount = 0;
-      let total = 0;
+      let locSuccessCount = 0;
+      let locFailCount = 0;
+      let eqSuccessCount = 0;
+      let eqFailCount = 0;
+      let totalLoc = AppState.localisations.length;
+      let totalEq = 0;
 
-      // Compter le total
+      // Compter le total d'équipements
       LOTS_TECHNIQUES.forEach(lot => {
         if (AppState.equipmentData[lot]) {
-          total += AppState.equipmentData[lot].length;
+          totalEq += AppState.equipmentData[lot].length;
         }
       });
 
-      console.log(`📊 Total d'équipements à synchroniser: ${total}`);
+      const total = totalLoc + totalEq;
+      console.log(`📊 Total à synchroniser: ${totalLoc} localisation(s) + ${totalEq} équipement(s) = ${total}`);
 
       if (total === 0) {
         console.warn("⚠️ Aucune donnée à synchroniser");
@@ -5458,25 +5563,46 @@
         return;
       }
 
-      // Itérer et envoyer
-      for (const lot of LOTS_TECHNIQUES) {
-        const equipments = AppState.equipmentData[lot] || [];
-        if (equipments.length > 0) {
-          console.log(`📦 Synchronisation du lot "${lot}" (${equipments.length} équipements)`);
-        }
-        for (const eq of equipments) {
-          const success = await syncEquipmentToSupabase(eq);
+      // 🆕 ÉTAPE 1 : Synchroniser les localisations EN PREMIER
+      if (totalLoc > 0) {
+        console.log(`🏢 Synchronisation de ${totalLoc} localisation(s)...`);
+        for (const localisation of AppState.localisations) {
+          const success = await syncLocalisationToSupabase(localisation);
           if (success) {
-            successCount++;
-            console.log(`✅ ${successCount}/${total} synchronisés`);
+            locSuccessCount++;
+            console.log(`✅ Localisation ${locSuccessCount}/${totalLoc} synchronisée`);
           } else {
-            failCount++;
-            console.error(`❌ Échec ${failCount}`);
+            locFailCount++;
+            console.error(`❌ Échec localisation ${locFailCount}`);
           }
         }
       }
 
-      console.log(`📊 Résultat final: ${successCount} succès, ${failCount} échecs sur ${total} total`);
+      // ÉTAPE 2 : Synchroniser les équipements
+      if (totalEq > 0) {
+        console.log(`📦 Synchronisation de ${totalEq} équipement(s)...`);
+        for (const lot of LOTS_TECHNIQUES) {
+          const equipments = AppState.equipmentData[lot] || [];
+          if (equipments.length > 0) {
+            console.log(`📦 Lot "${lot}" (${equipments.length} équipements)`);
+          }
+          for (const eq of equipments) {
+            const success = await syncEquipmentToSupabase(eq);
+            if (success) {
+              eqSuccessCount++;
+              console.log(`✅ Équipement ${eqSuccessCount}/${totalEq} synchronisé`);
+            } else {
+              eqFailCount++;
+              console.error(`❌ Échec équipement ${eqFailCount}`);
+            }
+          }
+        }
+      }
+
+      const successCount = locSuccessCount + eqSuccessCount;
+      const failCount = locFailCount + eqFailCount;
+
+      console.log(`📊 Résultat final: ${locSuccessCount}/${totalLoc} localisations + ${eqSuccessCount}/${totalEq} équipements (${failCount} échecs)`);
 
       if (failCount === 0) {
         showToast(`✅ Synchronisation terminée (${successCount}/${total})`, 'success');
@@ -5511,12 +5637,16 @@
 
     function generateCSV() {
       const headers = [
+        // 🆕 Informations Projet & Localisation
+        'Projet', 'Surface (m²)', 'Adresse', 'Entreprise', 'Contact Site', 'Téléphone',
+        'Date Visite', 'Technicien', 'Météo', 'Type Visite',
+        // Informations Équipement
         'Lot', 'Type', 'Code', 'QR Code', 'Ref DOE', 'Ref Plan',
-        'Date', 'Technicien', 'Niveau', 'Local',
+        'Niveau', 'Local', 'Heure Début', 'Heure Fin',
         'Marque', 'Modèle', 'Série', 'Puissance', 'Unité', 'Année',
         'EV', 'CRIT', 'Type Anomalie', 'Budget', 'Priorité',
         'Constat', 'Observations', 'Actions', 'Photos', 'Timestamp',
-        // 🆕 Nouveaux champs
+        // 🆕 Nouveaux champs équipement
         'Compteur Type', 'Compteur Série', 'Index Terrain', 'Index GTB', 'Écart', 'Cohérence',
         'Sanitaire Type', 'Débit Mesuré', 'Débit Réglem', 'Conformité',
         'GTB Logiciel', 'GTB Points', 'GTB Défauts',
@@ -5527,21 +5657,53 @@
 
       LOTS_TECHNIQUES.forEach(lot => {
         const equipments = AppState.equipmentData[lot] || [];
-        equipments.forEach(eq => {
+        equipments.forEach(equipment => {
+          // Normaliser l'équipement pour accès uniforme aux données
+          const eq = normalizeEquipmentForDisplay(equipment);
+
+          // 🆕 Récupérer la localisation associée
+          const localisation = eq.localisation_id ? getLocalisationByLocalId(eq.localisation_id) : null;
+          const loc = localisation?.data || {};
+
           const evLabels = ['Critique', 'Mauvais', 'Moyen', 'Bon', 'Neuf'];
           const photoNames = (eq.photos || []).map(p => p.name).join(', ');
 
+          const weatherLabels = {
+            'sec': 'Sec',
+            'pluie': 'Pluie',
+            'neige': 'Neige',
+            'vent': 'Vent fort',
+            'autre': 'Autre'
+          };
+          const typeVisiteLabels = {
+            'initiale': 'Initiale PEC',
+            'complementaire': 'Complémentaire',
+            'specifique': 'Relevés spécifiques'
+          };
+
           const row = [
+            // 🆕 Données de la localisation
+            escapeCSV(loc.project_name || ''),
+            escapeCSV(loc.project_surface || ''),
+            escapeCSV(loc.project_address || ''),
+            escapeCSV(loc.company_name || ''),
+            escapeCSV(loc.site_contact_name || ''),
+            escapeCSV(loc.site_contact_phone || ''),
+            escapeCSV(loc.visit_date || ''),
+            escapeCSV(loc.technician_name || ''),
+            escapeCSV(weatherLabels[loc.weather_conditions] || loc.weather_conditions || ''),
+            escapeCSV(typeVisiteLabels[loc.type_visite] || loc.type_visite || ''),
+            // Données de l'équipement
             escapeCSV(lot),
             escapeCSV(eq.type || ''),
             escapeCSV(eq.code || ''),
             escapeCSV(eq.qrCode || ''),
             escapeCSV(eq.refDOE || ''),
             escapeCSV(eq.refPlan || ''),
-            escapeCSV(eq.date || ''),
-            escapeCSV(eq.technicien || ''),
             escapeCSV(eq.niveau || ''),
             escapeCSV(eq.local || ''),
+            escapeCSV(eq.heureDebut || ''),
+            escapeCSV(eq.heureFin || ''),
             escapeCSV(eq.marque || ''),
             escapeCSV(eq.modele || ''),
             escapeCSV(eq.serie || ''),
@@ -5558,7 +5720,7 @@
             escapeCSV(eq.actions || ''),
             escapeCSV(photoNames),
             escapeCSV(eq.timestamp || ''),
-            // 🆕 Nouveaux champs
+            // 🆕 Nouveaux champs équipement
             escapeCSV(eq.waterMeterType || ''),
             escapeCSV(eq.waterMeterSerial || ''),
             escapeCSV(eq.waterMeterField || ''),
@@ -5633,10 +5795,13 @@
       const jsonData = {
         projet: 'PEC La Défense - 21 000 m²',
         dateExport: new Date().toISOString(),
-        version: '1.0',
+        version: '2.0', // 🆕 Version avec localisations
         nbLots: LOTS_TECHNIQUES.length,
         nbEquipements: Object.values(AppState.equipmentData).reduce((sum, arr) => sum + arr.length, 0),
-        donnees: AppState.equipmentData
+        nbLocalisations: AppState.localisations.length, // 🆕
+        localisations: AppState.localisations, // 🆕 Export des localisations
+        donnees: AppState.equipmentData,
+        completedLots: AppState.completedLots
       };
 
       const jsonString = JSON.stringify(jsonData, null, 2);
@@ -5651,7 +5816,7 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showToast('✅ Backup JSON complet exporté (avec photos)', 'success');
+      showToast('✅ Backup JSON complet exporté (localisations + équipements + photos)', 'success');
     }
 
     function downloadFile(content, filename, mimeType) {
@@ -5723,6 +5888,21 @@
 
           AppState.equipmentData = jsonData.donnees;
 
+          // 🆕 Restaurer les localisations (version 2.0+)
+          if (jsonData.localisations) {
+            AppState.localisations = jsonData.localisations;
+            console.log(`✅ ${jsonData.localisations.length} localisation(s) restaurée(s)`);
+          } else {
+            // Rétrocompatibilité : si pas de localisations dans le backup
+            AppState.localisations = [];
+            console.log('⚠️ Backup version 1.0 détecté (sans localisations)');
+          }
+
+          // 🆕 Restaurer les lots complétés
+          if (jsonData.completedLots) {
+            AppState.completedLots = jsonData.completedLots;
+          }
+
           saveToLocalStorage();
 
           renderDashboard();
@@ -5737,7 +5917,7 @@
           });
 
           showToast(
-            `✅ Import réussi ! ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
+            `✅ Import réussi ! ${AppState.localisations.length} localisation(s) + ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
             'success'
           );
 
@@ -5748,6 +5928,7 @@
               `📅 Date export : ${jsonData.dateExport ? new Date(jsonData.dateExport).toLocaleString('fr-FR') : 'N/A'}\n` +
               `🔢 Version : ${jsonData.version || 'N/A'}\n\n` +
               `📊 DONNÉES RESTAURÉES :\n` +
+              `   • ${AppState.localisations.length} localisation(s)\n` +
               `   • ${totalEquipments} équipement(s)\n` +
               `   • ${totalPhotos} photo(s)\n` +
               `   • ${Object.keys(AppState.equipmentData).length} lot(s)\n\n` +
@@ -5854,6 +6035,21 @@
 
           AppState.equipmentData = jsonData.donnees;
 
+          // 🆕 Restaurer les localisations (version 2.0+)
+          if (jsonData.localisations) {
+            AppState.localisations = jsonData.localisations;
+            console.log(`✅ ${jsonData.localisations.length} localisation(s) restaurée(s)`);
+          } else {
+            // Rétrocompatibilité : si pas de localisations dans le backup
+            AppState.localisations = [];
+            console.log('⚠️ Backup version 1.0 détecté (sans localisations)');
+          }
+
+          // 🆕 Restaurer les lots complétés
+          if (jsonData.completedLots) {
+            AppState.completedLots = jsonData.completedLots;
+          }
+
           saveToLocalStorage();
 
           renderDashboard();
@@ -5868,7 +6064,7 @@
           });
 
           showToast(
-            `✅ Import réussi ! ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
+            `✅ Import réussi ! ${AppState.localisations.length} localisation(s) + ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
             'success'
           );
 
@@ -5879,6 +6075,7 @@
               `📅 Date export : ${jsonData.dateExport ? new Date(jsonData.dateExport).toLocaleString('fr-FR') : 'N/A'}\n` +
               `🔢 Version : ${jsonData.version || 'N/A'}\n\n` +
               `📊 DONNÉES RESTAURÉES :\n` +
+              `   • ${AppState.localisations.length} localisation(s)\n` +
               `   • ${totalEquipments} équipement(s)\n` +
               `   • ${totalPhotos} photo(s)\n` +
               `   • ${Object.keys(AppState.equipmentData).length} lot(s)\n\n` +
@@ -5985,6 +6182,21 @@
 
           AppState.equipmentData = jsonData.donnees;
 
+          // 🆕 Restaurer les localisations (version 2.0+)
+          if (jsonData.localisations) {
+            AppState.localisations = jsonData.localisations;
+            console.log(`✅ ${jsonData.localisations.length} localisation(s) restaurée(s)`);
+          } else {
+            // Rétrocompatibilité : si pas de localisations dans le backup
+            AppState.localisations = [];
+            console.log('⚠️ Backup version 1.0 détecté (sans localisations)');
+          }
+
+          // 🆕 Restaurer les lots complétés
+          if (jsonData.completedLots) {
+            AppState.completedLots = jsonData.completedLots;
+          }
+
           saveToLocalStorage();
 
           renderDashboard();
@@ -5999,7 +6211,7 @@
           });
 
           showToast(
-            `✅ Import réussi ! ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
+            `✅ Import réussi ! ${AppState.localisations.length} localisation(s) + ${totalEquipments} équipement(s) + ${totalPhotos} photo(s) restaurés`,
             'success'
           );
 
@@ -6010,6 +6222,7 @@
               `📅 Date export : ${jsonData.dateExport ? new Date(jsonData.dateExport).toLocaleString('fr-FR') : 'N/A'}\n` +
               `🔢 Version : ${jsonData.version || 'N/A'}\n\n` +
               `📊 DONNÉES RESTAURÉES :\n` +
+              `   • ${AppState.localisations.length} localisation(s)\n` +
               `   • ${totalEquipments} équipement(s)\n` +
               `   • ${totalPhotos} photo(s)\n` +
               `   • ${Object.keys(AppState.equipmentData).length} lot(s)\n\n` +
