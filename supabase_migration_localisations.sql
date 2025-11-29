@@ -42,10 +42,10 @@ ALTER TABLE localisations ENABLE ROW LEVEL SECURITY;
 -- Politiques RLS (publiques pour développement)
 -- ⚠️ PRODUCTION : Remplacer "using (true)" par "using (auth.uid() = user_id)"
 
-CREATE POLICY "public select" ON localisations FOR SELECT USING (true);
-CREATE POLICY "public insert" ON localisations FOR INSERT WITH CHECK (true);
-CREATE POLICY "public update" ON localisations FOR UPDATE USING (true);
-CREATE POLICY "public delete" ON localisations FOR DELETE USING (true);
+CREATE POLICY IF NOT EXISTS "localisations_select_policy" ON localisations FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "localisations_insert_policy" ON localisations FOR INSERT WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "localisations_update_policy" ON localisations FOR UPDATE USING (true);
+CREATE POLICY IF NOT EXISTS "localisations_delete_policy" ON localisations FOR DELETE USING (true);
 
 -- ───────────────────────────────────────────────────────────────────────
 -- 3. MODIFIER LA TABLE EQUIPEMENTS
