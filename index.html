@@ -851,8 +851,6 @@
           <button class="btn btn-primary" id="btnSyncDashboard" onclick="syncAllData()"
             style="margin: 5px; background-color: #28a745;">🔄 Synchroniser</button>
           <button class="btn btn-secondary" id="btnExports" style="margin: 5px;">📊 Import-Export</button>
-          <button class="btn btn-primary" onclick="exportAuditPDF()" style="margin: 5px; background-color: #dc3545;">📄
-            Exporter PDF</button>
           <button class="btn btn-secondary" id="btnJournalVisite" style="margin: 5px;">📝 Journal de Visite</button>
           <button class="btn btn-secondary" id="btnSyntheseKpis" style="margin: 5px;">📊 Synthèse & KPIs</button>
         </div>
@@ -1106,8 +1104,8 @@
                     style="display: none; margin-top: 10px;">
                 </div>
                 <div class="form-group">
-                  <label>Code unique :</label>
-                  <input type="text" id="formCode" readonly placeholder="Auto-généré">
+                  <label>Repère équipement :</label>
+                  <input type="text" id="formCode" placeholder="Ex: EC-RDC-01, CH-R1-02...">
                 </div>
               </div>
 
@@ -2229,6 +2227,7 @@
             <button id="btnSync" class="btn-primary" onclick="syncAllData()" style="background-color: #28a745;">🔄
               Synchroniser</button>
             <button class="btn-secondary" onclick="exportCSVAndPhotos()">📄 Export CSV + Photos</button>
+            <button class="btn-primary" onclick="exportAuditPDF()" style="background-color: #dc3545;">📄 Exporter PDF</button>
             <button class="btn-secondary" onclick="exportJSON()">💾 Backup JSON</button>
             <input type="file" id="importJSON" accept=".json" style="display: none;" onchange="handleJSONImport(event)">
             <button class="btn-secondary" onclick="document.getElementById('importJSON').click()">📥 Restaurer</button>
@@ -2239,6 +2238,7 @@
             <h4 style="color: #333; margin-bottom: 15px;">📋 Guide des formats :</h4>
             <ul style="text-align: left; max-width: 600px; margin: 0 auto; color: #6c757d; line-height: 1.8;">
               <li><strong>📄 CSV + Photos</strong> : Export Excel + ZIP photos (2 fichiers) - Pour travailler dans Excel</li>
+              <li><strong>📄 Exporter PDF</strong> : Rapport d'audit complet au format PDF - Pour partager ou imprimer</li>
               <li><strong>💾 JSON</strong> : Backup complet réimportable - Pour sauvegarder ou changer d'ordinateur</li>
               <li><strong>📥 Restaurer</strong> : Importer un backup JSON - ⚠️ Écrase les données actuelles</li>
               <li><strong>🗑️ Reset</strong> : Effacer toutes les données - ⚠️ Action irréversible</li>
@@ -3411,7 +3411,7 @@
       AppState.currentBUDGET = null;
 
       document.getElementById('formLot').value = AppState.currentLot || '';
-      document.getElementById('formCode').value = generateCode();
+      document.getElementById('formCode').value = '';
 
       initCanvas();
 
@@ -4090,7 +4090,7 @@
       const confirmMessage = `⚠️ ATTENTION : Voulez-vous vraiment SUPPRIMER définitivement cette fiche ?\n\n` +
         `Lot: ${AppState.currentLot}\n` +
         `Équipement: ${equipmentName}\n` +
-        `Code: ${equipmentToDelete.data?.code || 'N/A'}\n\n` +
+        `Repère: ${equipmentToDelete.data?.code || 'N/A'}\n\n` +
         `Cette action est IRRÉVERSIBLE !`;
 
       if (!confirm(confirmMessage)) {
@@ -5641,7 +5641,7 @@
         'Projet', 'Surface (m²)', 'Adresse', 'Entreprise', 'Contact Site', 'Téléphone',
         'Date Visite', 'Technicien', 'Météo', 'Type Visite',
         // Informations Équipement
-        'Lot', 'Type', 'Code', 'QR Code', 'Ref DOE', 'Ref Plan',
+        'Lot', 'Type', 'Repère équipement', 'QR Code', 'Ref DOE', 'Ref Plan',
         'Niveau', 'Local', 'Heure Début', 'Heure Fin',
         'Marque', 'Modèle', 'Série', 'Puissance', 'Unité', 'Année',
         'EV', 'CRIT', 'Type Anomalie', 'Budget', 'Priorité',
