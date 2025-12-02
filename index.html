@@ -2510,18 +2510,50 @@
       currentEquipment: null,
       editingEquipmentId: null,
       currentEV: null,
-      function showScreen(screenName) {
-        console.log('📱 Navigation vers:', screenName);
+      currentCRIT: null,
+      currentTYPE: null,
+      currentBUDGET: null,
+      equipmentData: {},
+      completedLots: [],
+      currentPhotos: [],
+      currentCroquis: null,
 
-    document.querySelectorAll('.screen').forEach((screen) => {
-      screen.classList.remove('active');
-    });
+      // 🆕 LOCALISATIONS (Projets & Localisations)
+      localisations: [],
+      currentLocalisation: null,
 
-    const screen = document.getElementById(screenName);
-    if (screen) {
-      screen.classList.add('active');
-      AppState.currentScreen = screenName;
-    }
+      formatRestitution: 'csv',
+      cloudUrl: '',
+      gmaoLogiciel: '',
+      journalVisite: {
+        incidents: '',
+        zonesNonVisitees: '',
+        pointsARevoir: ''
+      },
+      syntheseTerrain: {
+        forces: '',
+        faiblesses: '',
+        priorites: '',
+        recommandations: ''
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function showScreen(screenName) {
+      console.log('📱 Navigation vers:', screenName);
+
+      document.querySelectorAll('.screen').forEach((screen) => {
+        screen.classList.remove('active');
+      });
+
+      const screen = document.getElementById(screenName);
+      if (screen) {
+        screen.classList.add('active');
+        AppState.currentScreen = screenName;
+      }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
