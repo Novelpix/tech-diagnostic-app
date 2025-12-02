@@ -3086,14 +3086,6 @@ window.dynamicFieldConfig = {
         if (section) section.classList.add('hidden');
       });
 
-      // 🆕 Gestion dynamique selon le TYPE d'équipement sélectionné
-      const typeSelect = document.getElementById('formType');
-      if (typeSelect) {
-        typeSelect.addEventListener('change', function () {
-          updateFieldsBasedOnType(this.value, lot);
-        });
-      }
-
       // Afficher selon le lot (comportement par défaut)
       switch (lot) {
         case 'CVC Production':
@@ -3739,6 +3731,9 @@ window.dynamicFieldConfig = {
         } else {
           autreField.style.display = 'none';
         }
+
+        // 🆕 Afficher les sections dynamiques selon le type
+        updateFieldsBasedOnType(this.value, AppState.currentLot);
       });
 
       // NOUVEAU : Format de restitution
