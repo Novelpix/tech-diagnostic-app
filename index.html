@@ -2503,6 +2503,291 @@
       }
     }
     // === FIN SUPABASE CONFIG ===
+// ═══════════════════════════════════════════════════════════════════════
+// 🆕 PECBAT-DYN : Configuration des champs dynamiques par type d'équipement
+// ═══════════════════════════════════════════════════════════════════════
+window.dynamicFieldConfig = {
+  "PRODUCTION ET DISTRIBUTION DE CHALEUR": [
+    { name: "puissance_kw", label: "Puissance nominale (kW)" },
+    { name: "type_energie", label: "Type d'énergie" },
+    { name: "temperature_depart", label: "Température départ (°C)" },
+    { name: "pression_bar", label: "Pression service (bar)" }
+  ],
+  "PRODUCTION ET DISTRIBUTION DE FROID": [
+    { name: "puissance_froid_kw", label: "Puissance frigorifique (kW)" },
+    { name: "fluide_frigorigene", label: "Fluide frigorigène" },
+    { name: "cop", label: "COP mesuré" },
+    { name: "temperature_evaporation", label: "Température évaporation (°C)" }
+  ],
+  "VENTILATION - TRAITEMENT D'AIR": [
+    { name: "debit_air_m3h", label: "Débit d'air (m³/h)" },
+    { name: "type_filtration", label: "Type de filtration" },
+    { name: "pression_statique_pa", label: "Pression statique (Pa)" },
+    { name: "taux_recyclage", label: "Taux de recyclage (%)" }
+  ],
+  "CUISINE": [
+    { name: "debit_extraction_m3h", label: "Débit extraction (m³/h)" },
+    { name: "type_hotte", label: "Type de hotte" },
+    { name: "systeme_compensation", label: "Système de compensation" }
+  ],
+  "EQUIPEMENTS TERMINAUX": [
+    { name: "puissance_unite_w", label: "Puissance unitaire (W)" },
+    { name: "type_terminal", label: "Type de terminal" },
+    { name: "presence_regulation", label: "Présence régulation" }
+  ],
+  "DESENFUMAGE MECANIQUE": [
+    { name: "debit_desenfumage_m3h", label: "Débit désenfumage (m³/h)" },
+    { name: "type_exutoire", label: "Type d'exutoire" },
+    { name: "commande_manuelle", label: "Commande manuelle opérationnelle" },
+    { name: "secteur_couvert", label: "Secteur couvert" }
+  ],
+  "INSTALLATION DE DETECTION": [
+    { name: "type_detecteur", label: "Type de détecteur" },
+    { name: "zone_detection", label: "Zone de détection" },
+    { name: "date_verification", label: "Date dernière vérification" }
+  ],
+  "ARMOIRE ELECTRIQUE": [
+    { name: "puissance_souscrite_kva", label: "Puissance souscrite (kVA)" },
+    { name: "indice_protection_ip", label: "Indice de protection (IP)" },
+    { name: "presence_differentiel", label: "Différentiel 30mA présent" }
+  ],
+  "ALIMENTATION ET DISTRIBUTION EAU FROIDE": [
+    { name: "diametre_canalisation_mm", label: "Diamètre canalisation (mm)" },
+    { name: "materiau_reseau", label: "Matériau réseau" },
+    { name: "pression_eau_bar", label: "Pression eau (bar)" },
+    { name: "presence_clapet", label: "Clapet anti-retour présent" }
+  ],
+  "COMPTAGE EAU": [
+    { name: "type_compteur", label: "Type de compteur" },
+    { name: "index_releve_m3", label: "Index relevé (m³)" },
+    { name: "diametre_compteur_mm", label: "Diamètre compteur (mm)" },
+    { name: "date_etalonnage", label: "Date étalonnage" }
+  ],
+  "EAU CHAUDE SANITAIRE": [
+    { name: "volume_ballon_l", label: "Volume ballon (L)" },
+    { name: "temperature_stockage", label: "Température stockage (°C)" },
+    { name: "presence_bouclage", label: "Bouclage ECS présent" },
+    { name: "type_production", label: "Type de production" }
+  ],
+  "EQUIPEMENTS SANITAIRES": [
+    { name: "type_equipement", label: "Type d'équipement" },
+    { name: "debit_nominal_lmin", label: "Débit nominal (L/min)" },
+    { name: "presence_economiseur", label: "Économiseur d'eau" }
+  ],
+  "EAUX GRASSES": [
+    { name: "type_separateur", label: "Type de séparateur" },
+    { name: "capacite_bac_l", label: "Capacité bac (L)" },
+    { name: "frequence_vidange", label: "Fréquence vidange" }
+  ],
+  "EAUX USEES / EAUX VANNES": [
+    { name: "diametre_evacuation_mm", label: "Diamètre évacuation (mm)" },
+    { name: "materiau_conduite", label: "Matériau conduite" },
+    { name: "presence_ventilation", label: "Ventilation primaire/secondaire" }
+  ],
+  "EAUX PLUVIALES": [
+    { name: "diametre_descente_mm", label: "Diamètre descente (mm)" },
+    { name: "type_collecteur", label: "Type de collecteur" },
+    { name: "surface_collectee_m2", label: "Surface collectée (m²)" }
+  ],
+  "PROTECTION INCENDIE": [
+    { name: "type_ria", label: "Type RIA" },
+    { name: "diametre_ria_mm", label: "Diamètre RIA (mm)" },
+    { name: "longueur_tuyau_m", label: "Longueur tuyau (m)" },
+    { name: "pression_statique_bar", label: "Pression statique (bar)" }
+  ],
+  "SPRINKLAGE": [
+    { name: "type_sprinkler", label: "Type de sprinkler" },
+    { name: "temperature_declenchement", label: "Température déclenchement (°C)" },
+    { name: "pression_service_bar", label: "Pression service (bar)" },
+    { name: "zone_protegee", label: "Zone protégée" }
+  ],
+  "LIVRAISON - TRANSFORMATION": [
+    { name: "puissance_transfo_kva", label: "Puissance transformateur (kVA)" },
+    { name: "tension_primaire_v", label: "Tension primaire (V)" },
+    { name: "tension_secondaire_v", label: "Tension secondaire (V)" },
+    { name: "type_refroidissement", label: "Type de refroidissement" }
+  ],
+  "DISTRIBUTION": [
+    { name: "type_tableau", label: "Type de tableau" },
+    { name: "nombre_departs", label: "Nombre de départs" },
+    { name: "courant_nominal_a", label: "Courant nominal (A)" }
+  ],
+  "COMPTAGE": [
+    { name: "type_compteur_elec", label: "Type de compteur" },
+    { name: "puissance_souscrite_kva", label: "Puissance souscrite (kVA)" },
+    { name: "index_releve_kwh", label: "Index relevé (kWh)" },
+    { name: "numero_pdl", label: "Numéro PDL" }
+  ],
+  "ECLAIRAGE NORMAL": [
+    { name: "type_source", label: "Type de source lumineuse" },
+    { name: "puissance_w", label: "Puissance (W)" },
+    { name: "flux_lumineux_lm", label: "Flux lumineux (lm)" },
+    { name: "presence_detection", label: "Détection présence" }
+  ],
+  "ECLAIRAGE DE SECURITE": [
+    { name: "type_baes", label: "Type BAES/LSC" },
+    { name: "autonomie_h", label: "Autonomie (h)" },
+    { name: "flux_lumineux_lm", label: "Flux lumineux (lm)" },
+    { name: "date_verification", label: "Date dernière vérification" }
+  ],
+  "ECLAIRAGE EXTERIEUR": [
+    { name: "type_luminaire", label: "Type de luminaire" },
+    { name: "puissance_w", label: "Puissance (W)" },
+    { name: "indice_protection_ip", label: "Indice protection (IP)" },
+    { name: "type_commande", label: "Type de commande" }
+  ],
+  "APPAREILLAGE": [
+    { name: "type_appareil", label: "Type d'appareil" },
+    { name: "calibre_a", label: "Calibre (A)" },
+    { name: "pouvoir_coupure_ka", label: "Pouvoir de coupure (kA)" }
+  ],
+  "BORNE IRVE": [
+    { name: "puissance_charge_kw", label: "Puissance charge (kW)" },
+    { name: "type_prise", label: "Type de prise" },
+    { name: "nombre_points_charge", label: "Nombre points de charge" },
+    { name: "mode_paiement", label: "Mode de paiement" }
+  ],
+  "ONDULEURS": [
+    { name: "puissance_kva", label: "Puissance (kVA)" },
+    { name: "autonomie_min", label: "Autonomie batteries (min)" },
+    { name: "type_onduleur", label: "Type d'onduleur" },
+    { name: "taux_charge_pct", label: "Taux de charge (%)" }
+  ],
+  "GROUPE ELECTROGENE": [
+    { name: "puissance_kva", label: "Puissance (kVA)" },
+    { name: "type_carburant", label: "Type de carburant" },
+    { name: "capacite_reservoir_l", label: "Capacité réservoir (L)" },
+    { name: "temps_demarrage_s", label: "Temps démarrage (s)" }
+  ],
+  "CONTRÔLE D'ACCES / ANTI-INTRUSION": [
+    { name: "type_systeme", label: "Type de système" },
+    { name: "nombre_zones", label: "Nombre de zones" },
+    { name: "protocole_communication", label: "Protocole communication" }
+  ],
+  "DISPOSITIF D'ACCES": [
+    { name: "type_lecteur", label: "Type de lecteur" },
+    { name: "technologie", label: "Technologie (badge/biométrie)" },
+    { name: "alimentation", label: "Type d'alimentation" }
+  ],
+  "VIDEOPHONIE": [
+    { name: "type_installation", label: "Type d'installation" },
+    { name: "nombre_postes", label: "Nombre de postes" },
+    { name: "type_communication", label: "Type de communication" }
+  ],
+  "INTERPHONIE": [
+    { name: "nombre_postes", label: "Nombre de postes" },
+    { name: "type_systeme", label: "Type de système" },
+    { name: "portee_m", label: "Portée (m)" }
+  ],
+  "VIDEOSURVEILLANCE": [
+    { name: "type_camera", label: "Type de caméra" },
+    { name: "resolution_px", label: "Résolution (Mpx)" },
+    { name: "angle_vision_deg", label: "Angle de vision (°)" },
+    { name: "vision_nocturne", label: "Vision nocturne" }
+  ],
+  "SYSTEME D'ALERTE ATTENTAT": [
+    { name: "type_systeme", label: "Type de système" },
+    { name: "zones_couvertes", label: "Zones couvertes" },
+    { name: "date_verification", label: "Date dernière vérification" }
+  ],
+  "RESEAU VDI": [
+    { name: "categorie_cable", label: "Catégorie câble" },
+    { name: "nombre_prises", label: "Nombre de prises" },
+    { name: "type_brassage", label: "Type de brassage" },
+    { name: "debit_nominal_mbps", label: "Débit nominal (Mbps)" }
+  ],
+  "GTB": [
+    { name: "logiciel_supervision", label: "Logiciel supervision" },
+    { name: "nombre_points", label: "Nombre de points" },
+    { name: "protocole_communication", label: "Protocole communication" },
+    { name: "taux_disponibilite_pct", label: "Taux disponibilité (%)" }
+  ],
+  "SSI": [
+    { name: "categorie_ssi", label: "Catégorie SSI" },
+    { name: "nombre_detecteurs", label: "Nombre de détecteurs" },
+    { name: "type_centrale", label: "Type de centrale" },
+    { name: "date_verification", label: "Date dernière vérification" }
+  ],
+  "NACELLES": [
+    { name: "hauteur_travail_m", label: "Hauteur de travail (m)" },
+    { name: "charge_admissible_kg", label: "Charge admissible (kg)" },
+    { name: "type_deplacement", label: "Type de déplacement" },
+    { name: "energie_motorisation", label: "Énergie motorisation" }
+  ],
+  "PORTES AUTOMATIQUES": [
+    { name: "type_porte", label: "Type de porte" },
+    { name: "largeur_passage_mm", label: "Largeur passage (mm)" },
+    { name: "type_motorisation", label: "Type de motorisation" },
+    { name: "presence_cellule", label: "Cellule sécurité présente" }
+  ],
+  "T8A : MENUISERIES EXTERIEURES (MEN)": [
+    { name: "type_menuiserie", label: "Type de menuiserie" },
+    { name: "materiau", label: "Matériau" },
+    { name: "vitrage", label: "Type de vitrage" },
+    { name: "coefficient_uw", label: "Coefficient Uw (W/m².K)" }
+  ],
+  "T8B - TERRASSES / ETANCHEITE (TER)": [
+    { name: "type_etancheite", label: "Type d'étanchéité" },
+    { name: "surface_m2", label: "Surface (m²)" },
+    { name: "epaisseur_isolant_mm", label: "Épaisseur isolant (mm)" },
+    { name: "systeme_evacuation", label: "Système évacuation EP" }
+  ],
+  "MENUISERIES INTERIEURES": [
+    { name: "type_menuiserie", label: "Type de menuiserie" },
+    { name: "materiau", label: "Matériau" },
+    { name: "dimensions_mm", label: "Dimensions (mm)" }
+  ],
+  "OCCULTATION SOLAIRE": [
+    { name: "type_occultation", label: "Type d'occultation" },
+    { name: "motorisation", label: "Motorisation" },
+    { name: "type_commande", label: "Type de commande" }
+  ],
+  "PORTE COMPARTIMENTAGE COUPE-FEU / PORTE ETANCHE PPRI": [
+    { name: "degre_resistance_feu", label: "Degré résistance feu" },
+    { name: "largeur_passage_mm", label: "Largeur passage (mm)" },
+    { name: "ferme_porte", label: "Ferme-porte fonctionnel" },
+    { name: "date_verification", label: "Date vérification" }
+  ],
+  "MATERIEL DE CUISSON - RECHAUFFAGE": [
+    { name: "type_appareil", label: "Type d'appareil" },
+    { name: "puissance_kw", label: "Puissance (kW)" },
+    { name: "source_energie", label: "Source énergie" },
+    { name: "nombre_foyers", label: "Nombre de foyers" }
+  ],
+  "MATERIEL DE PREPARATION": [
+    { name: "type_equipement", label: "Type d'équipement" },
+    { name: "capacite_l", label: "Capacité (L)" },
+    { name: "puissance_w", label: "Puissance (W)" }
+  ],
+  "CHAMBRES FROIDES et MATERIEL FRIGORIFIQUE": [
+    { name: "volume_m3", label: "Volume (m³)" },
+    { name: "temperature_consigne", label: "Température consigne (°C)" },
+    { name: "puissance_froid_w", label: "Puissance froid (W)" },
+    { name: "type_froid", label: "Type de froid" }
+  ],
+  "PLONGE": [
+    { name: "type_plonge", label: "Type de plonge" },
+    { name: "nombre_bacs", label: "Nombre de bacs" },
+    { name: "materiau", label: "Matériau" }
+  ],
+  "MATERIEL DE LAVAGE": [
+    { name: "type_lave_vaisselle", label: "Type lave-vaisselle" },
+    { name: "capacite_couverts", label: "Capacité (couverts/h)" },
+    { name: "consommation_eau_l", label: "Consommation eau (L/cycle)" },
+    { name: "puissance_kw", label: "Puissance (kW)" }
+  ],
+  "FONTAINE A EAU": [
+    { name: "type_fontaine", label: "Type de fontaine" },
+    { name: "eau_froide", label: "Eau froide disponible" },
+    { name: "eau_chaude", label: "Eau chaude disponible" },
+    { name: "systeme_filtration", label: "Système filtration" }
+  ],
+  "EQUIPEMENTS DIVERS": [
+    { name: "type_equipement", label: "Type d'équipement" },
+    { name: "fonction", label: "Fonction principale" },
+    { name: "puissance_w", label: "Puissance (W)" }
+  ]
+};
 
     const AppState = {
       currentScreen: 'dashboard',
@@ -2919,7 +3204,61 @@
         const section = document.getElementById('water-quality-section');
         if (section) section.classList.remove('hidden');
       }
+
+      // 🆕 PECBAT-DYN : Appel du moteur dynamique
+      if (typeof window.updateDynamicFields === 'function') {
+        window.updateDynamicFields(equipmentType);
+      }
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🆕 PECBAT-DYN : Moteur de génération des champs dynamiques
+    // ═══════════════════════════════════════════════════════════════════════
+    window.updateDynamicFields = function(equipmentType, equipmentData = {}) {
+      const section = document.getElementById('dynamic-fields-section');
+      const container = document.getElementById('dynamic-fields-container');
+      
+      if (!section || !container) {
+        console.warn('⚠️ Sections dynamic-fields introuvables');
+        return;
+      }
+
+      // Chercher la configuration pour ce type d'équipement
+      const fieldsConfig = window.dynamicFieldConfig ? window.dynamicFieldConfig[equipmentType] : null;
+
+      // Si aucune config trouvée, masquer la section
+      if (!fieldsConfig || fieldsConfig.length === 0) {
+        section.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+      }
+
+      // Afficher la section et générer les champs
+      section.classList.remove('hidden');
+      container.innerHTML = '';
+
+      fieldsConfig.forEach(field => {
+        const fieldId = `dyn-${field.name}`;
+        const fieldValue = equipmentData[field.name] || '';
+
+        const fieldWrapper = document.createElement('div');
+        fieldWrapper.className = 'form-group';
+        fieldWrapper.innerHTML = `
+          <label for="${fieldId}">${field.label}</label>
+          <input 
+            type="text" 
+            id="${fieldId}" 
+            name="${field.name}"
+            value="${fieldValue}"
+            placeholder="${field.label}"
+          />
+        `;
+
+        container.appendChild(fieldWrapper);
+      });
+
+      console.log(`🧩 PECBAT-DYN: ${fieldsConfig.length} champs générés pour "${equipmentType}"`);
+    };
 
     // 🆕 Auto-calcul écart compteur d'eau
     function setupWaterMeterCalculation() {
@@ -3442,6 +3781,12 @@
       document.getElementById('priorityScore').textContent = '-';
       document.getElementById('priorityLabel').textContent = 'En attente de saisie';
 
+      // 🆕 PECBAT-DYN : Masquer et vider les champs dynamiques
+      const dynamicSection = document.getElementById('dynamic-fields-section');
+      const dynamicContainer = document.getElementById('dynamic-fields-container');
+      if (dynamicSection) dynamicSection.classList.add('hidden');
+      if (dynamicContainer) dynamicContainer.innerHTML = '';
+
       document.getElementById('btnDeleteEquipment').style.display = 'none';
     }
 
@@ -3925,6 +4270,19 @@
         timestamp: new Date().toISOString()
       };
 
+      // 🆕 PECBAT-DYN : Collecter les valeurs des champs dynamiques
+      const dynamicContainer = document.getElementById('dynamic-fields-container');
+      if (dynamicContainer) {
+        const dynamicInputs = dynamicContainer.querySelectorAll('input[id^="dyn-"]');
+        dynamicInputs.forEach(input => {
+          const fieldName = input.name;
+          const fieldValue = input.value;
+          if (fieldName && fieldValue) {
+            equipmentData[fieldName] = fieldValue;
+          }
+        });
+      }
+
       // ═══════════════════════════════════════════════════════════════════════
       // PRÉPARATION DES PHOTOS AVEC MÉTADONNÉES
       // ═══════════════════════════════════════════════════════════════════════
@@ -4320,6 +4678,11 @@
 
       // Déclencher l'affichage des sections spécifiques
       updateFieldsBasedOnType(equipmentType, AppState.currentLot);
+
+      // 🆕 PECBAT-DYN : Charger les champs dynamiques avec les données
+      if (typeof window.updateDynamicFields === 'function') {
+        window.updateDynamicFields(equipmentType, eq.data || eq);
+      }
 
       document.getElementById('formCode').value = eq.code || '';
       document.getElementById('formQRCode').value = eq.qrCode || '';
