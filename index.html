@@ -6368,11 +6368,6 @@ window.dynamicFieldConfig = {
             console.log('❌ Échec enregistrement Service Worker:', error);
           });
       });
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
 
     function getTodayDateString() {
