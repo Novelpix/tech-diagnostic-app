@@ -2539,6 +2539,34 @@
     };
 
     // ═══════════════════════════════════════════════════════════════════════
+    // INITIALISATION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      console.log('🚀 Initialisation PEC Tech App 100%...');
+      console.log(`📦 Version: ${APP_VERSION}`);
+
+      // Afficher la version dans l'interface
+      const versionElement = document.getElementById('appVersion');
+      if (versionElement) {
+        versionElement.textContent = `v${APP_VERSION}`;
+      }
+
+      loadFromLocalStorage();
+      initializeEventListeners();
+      renderDashboard();
+      updateOnlineStatus();
+      startAutoSave();
+
+      // Nettoyage des IDs Supabase fantômes (équipements JSON importés)
+      if (navigator.onLine && supabaseClient) {
+        await cleanPhantomSupabaseIds();
+      }
+
+      console.log('✅ Application initialisée');
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
     // NAVIGATION
     // ═══════════════════════════════════════════════════════════════════════
 
