@@ -4446,7 +4446,13 @@
 
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
-    let migrated = false;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // MIGRATION AUTOMATIQUE DES DONNÉES
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function migrateEquipmentData(equipmentData) {
+      let migrated = false;
 
     for (const lot in equipmentData) {
       const equipments = equipmentData[lot];
